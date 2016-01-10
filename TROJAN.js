@@ -1,9 +1,23 @@
+"use strict";
+
 (function () {
+
+var TROJAN = {}
 
 const http = require('http')
 const async = require('./async')
 
-var TROJAN = {}
+/*
+var previous_TROJAN
+var root = typeof self === 'object' && self.self === self && self ||
+        typeof global === 'object' && global.global === global && global ||
+        this
+if (root != null) previous_TROJAN = root.TROJAN
+TROJAN.noConflict = function () {
+    root.TROJAN = previous_TROJAN
+    return TROJAN
+}
+*/
 
 var urlparse = function(url,callback) {
 	url = "http://web-app.usc.edu/web/soc/api" + url
@@ -18,7 +32,7 @@ var urlparse = function(url,callback) {
 					var data = JSON.parse(body)
 					callback(data) // IMPORTANT
 				} catch(e) {
-					console.error("Error: ", e)
+					//console.error("Error: ")
 				}
 			})
 		}).on('error', function(e) {
@@ -26,6 +40,7 @@ var urlparse = function(url,callback) {
 		})
 	}
 }
+
 
 TROJAN.term = function(callback,val) {
 	val = val || {} // {curr}
@@ -263,6 +278,8 @@ TROJAN.sect = function(callback,val) {
 if (typeof module === 'object' && module.exports) {
 	module.exports = TROJAN
 }
+
+/*
 // AMD / RequireJS
 else if (typeof define === 'function' && define.amd) {
 	define([], function () {
@@ -273,5 +290,6 @@ else if (typeof define === 'function' && define.amd) {
 else {
 	root.TROJAN = TROJAN
 }
+*/
 
 }());
