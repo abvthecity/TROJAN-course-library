@@ -62,7 +62,9 @@ TROJAN.dept_raw = function(callback,val) {
 	function deptCallback(term){
 		var url = "/depts/" + term
 		urlparse(url,function(data) {
-			callback(data.department)
+			async.each(data.department, function(dump){
+				callback(dump)
+			})
 		})
 	}
 
@@ -71,18 +73,16 @@ TROJAN.dept_raw = function(callback,val) {
 }
 
 TROJAN.school = function(callback,val) {
-	val = val || {} // {school, data_dump, #term}
+	val = val || {} // {school, justcode, data_dump, term}
+	val.justcode = (val.justcode == true)
 
 	function data_reduce(data){
-		async.each(data,function(obj,cb) {
-			if(school = val.school){
-				if(obj['code'].toLowerCase() == school.toLowerCase()){
-					callback(obj)
-				}
-			}
-			else callback(obj['code'])
-			cb()
-		})
+		if(val.school){
+			if(data['code'].toLowerCase() == val.school.toLowerCase())
+				callback(data)
+		}
+		else if(val.justcode) callback(data['code'])
+		else callback(data)
 	}
 
 	if(val.data_dump) data_reduce(val.data_dump)
@@ -90,34 +90,31 @@ TROJAN.school = function(callback,val) {
 }
 
 TROJAN.dept = function(callback,val) {
-	val = val || {} // {school, justcode}
+	val = val || {} // {school, justcode, term}
+	val.justcode = (val.justcode == true)
+
+	var data = []
 
 	function dataGen(data_dump){
-		var data = []
+		if(data_dump.department != undefined){
+			var depts = data_dump.department
+			if(!Array.isArray(depts)) depts = [depts]
 
-		async.each(data_dump,function(school_obj, cb){
-			depts = school_obj.department
-
-			function deptObjCallback(dept_obj,cbo) {
-				if(!(data.indexOf(dept_obj['code']) > -1)){
-					data.push(dept_obj['code'])
-					if(val.justcode) callback(dept_obj['code'])
-					else callback(dept_obj)
-				} cbo()
-			}
-
-			if(Array.isArray(depts)) each(depts,deptObjCallback)
-			else if(depts != undefined) deptObjCallback(depts)
-
-			cb()
-		})
+			async.each(depts, function(dept){
+				if(!(data.indexOf(dept['code']) > -1)){
+					data.push(dept['code'])
+					if(val.justcode) callback(dept['code'])
+					else callback(dept)
+				}
+			})
+		}
 	}
 
-	TROJAN.dept_raw(function(data_dump) {
+	TROJAN.school(function(data_dump) {
 
 		if(val.school){
 			TROJAN.school(function(datum) {
-				dataGen([datum])
+				dataGen(datum)
 			}, {
 				school: val.school, 
 				data_dump: data_dump
@@ -165,25 +162,29 @@ TROJAN.dept_info = function(callback,val) {
 
 TROJAN.course_raw = function(callback, val) {
 	val = val || {} // {dept, term, justcode}
+	val.justcode = (val.justcode == true)
+
+	var courseTrack = []
 
 	function deptInfoCallback(dept,term,callback){
 		var url = "/classes/" + dept + "/" + term
 		urlparse(url, function(data){
 			var offered = data.OfferedCourses['course']
 
-
-			if(Array.isArray(offered)){
-				async.each(offered,function(obj,cb){
+			function courseTicker(obj){
+				if(!(courseTrack.indexOf(offered.ScheduledCourseID) > -1)){
+					courseTrack.push(obj.ScheduledCourseID)
 					if(val.justcode) callback(obj.ScheduledCourseID)
 					else callback(obj)
+				}
+			}
 
-					cb()
+			if(Array.isArray(offered)){
+				async.each(offered,function(obj){
+					courseTicker(obj)
 				})
 			}
-			else if(offered != undefined){
-				if(val.justcode) callback(offered.ScheduledCourseID)
-				else callback(offered)
-			}
+			else if(offered != undefined) courseTicker(offered)
 
 		})
 	}
@@ -192,18 +193,17 @@ TROJAN.course_raw = function(callback, val) {
 		if(val.term) deptInfoCallback(val.dept,val.term,callback)
 		else {
 			TROJAN.current_term(function(term){
-				deptInfoCallback(val.dept, term, callback)
+				deptInfoCallback(val.dept,term,callback)
 			})
 		}
 	}
 	else {
+		function rapidLoop(term){
+			TROJAN.dept(function(depts){
+				deptInfoCallback(depts,term,callback)
+			},{justcode:true})
+		}
 		if(val.justcode){
-			function rapidLoop(term){
-				TROJAN.dept(function(depts){
-					deptInfoCallback(depts,term,callback)
-				},{justcode:true})
-			}
-
 			if(val.term) rapidLoop(val.term)
 			else TROJAN.current_term(rapidLoop)
 		}
@@ -251,19 +251,23 @@ TROJAN.course = function(callback,val) {
 }
 
 TROJAN.sect = function(callback,val) {
-	val = val || {} // {course, term, sect}
+	val = val || {} // {course, term, sect, justcode}
+	val.justcode = (val.justcode == true)
 
 	TROJAN.course(function(data_dump){
 
 		if(val.sect){
-			val.sect = val.sect.substring(0,5)
-			if(data_dump.SectionData['id'] == sect){
-				callback(data_dump.SectionData)
-			}
+			async.each(data_dump.SectionData,function(obj){
+				if(obj['id'] == val.sect.substring(0,5)){
+					if(val.justcode) callback(obj['id']+obj.dclass_code)
+					else callback(obj)
+				}
+			})
 		}
 		else {
-			async.each(data_dump.SectionData,function(obj,cb){
-				callback(obj)
+			async.each(data_dump.SectionData,function(obj){
+				if(val.justcode) callback(obj['id']+obj.dclass_code)
+				else callback(obj)
 			})
 		}
 
