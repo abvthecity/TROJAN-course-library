@@ -256,8 +256,11 @@ TROJAN.sect = function(callback,val) {
 
 	TROJAN.course(function(data_dump){
 
+		var sectarr = data_dump.SectionData
+		if(!Array.isArray(sectarr)) sectarr = [sectarr]
+
 		if(val.sect){
-			async.each(data_dump.SectionData,function(obj){
+			async.each(sectarr,function(obj){
 				if(obj['id'] == val.sect.substring(0,5)){
 					if(val.justcode) callback(obj['id']+obj.dclass_code)
 					else callback(obj)
@@ -265,7 +268,7 @@ TROJAN.sect = function(callback,val) {
 			})
 		}
 		else {
-			async.each(data_dump.SectionData,function(obj){
+			async.each(sectarr,function(obj){
 				if(val.justcode) callback(obj['id']+obj.dclass_code)
 				else callback(obj)
 			})
