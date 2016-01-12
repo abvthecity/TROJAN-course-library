@@ -5,7 +5,7 @@
 var TROJAN = {}
 
 const http = require('http')
-const async = require('./async')
+const async = require('async')
 
 /*
 var previous_TROJAN

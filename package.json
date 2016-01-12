@@ -1,0 +1,19 @@
+{
+  "name": "trojan",
+  "version": "0.1.3",
+  "description": "Course Catalogue Web API for USC (JS and Node.js, unofficial)",
+  "main": "TROJAN.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ninjiangstar/TROJAN-Course-API.git"
+  },
+  "author": "Andrew Jiang",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ninjiangstar/TROJAN-Course-API/issues"
+  },
+  "homepage": "https://github.com/ninjiangstar/TROJAN-Course-API#readme"
+}
