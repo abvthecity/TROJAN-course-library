@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/ninjiangstar/TROJAN-Course-API/issues"
   },
-  "homepage": "https://github.com/ninjiangstar/TROJAN-Course-API#readme"
+  "homepage": "https://github.com/ninjiangstar/TROJAN-Course-API#readme",
+  "dependencies": {
+    "async": "^2.0.0"
+  }
 }
