@@ -1,22 +1,22 @@
 # TROJAN Course API
 
-TROJAN Course API is fast, asyncronous, unofficial course catalogue API that can be used to develop course tools for USC with javascript. 
-This API library is written for **NODE.js**. Browser-side javascript is currently not supported due to the nature of the source of data.
-If you have a solution, please let me know.
+TROJAN Course API is fast, asyncronous, unofficial course catalogue API that can be used to develop course tools for USC with javascript.
+
+## Version 2 is coming soon. The following will no longer apply soon.
 
 ## Basic usage
 ```javascript
-  const TROJAN = require('./TROJAN')
-  
-  TROJAN.method_name(callback, valobject) // PARAMETERS
-  
-  TROJAN.term(console.log) // ['20152','20153','20161']
-  TROJAN.current_term(console.log) // 20161
-  TROJAN.dept_raw(console.log, {term: "20161"}) // each department
+  const TROJAN = require('TROJAN');
+
+  // TROJAN.method_name(callback, valobject) // PARAMETERS
+  //
+  // TROJAN.term(console.log) // ['20152','20153','20161']
+  // TROJAN.current_term(console.log) // 20161
+  // TROJAN.dept_raw(console.log, {term: "20161"}) // each department
   ....
 ```
 
-Since the entire API runs asynchronously, the methods do not directly return any value. 
+Since the entire API runs asynchronously, the methods do not directly return any value.
 This means ```var term = TROJAN.term()``` WILL NOT work.
 Instead, each method will return
 
@@ -51,7 +51,7 @@ The callback(school) recieves ONE object of each school, which contains an objec
 { code: 'FINE',
   name: 'Roski School of Art and Design',
   type: 'Y',
-  department: 
+  department:
    [ { code: 'ART', name: 'Art', type: 'N' },
      { code: 'CRIT', name: 'Critical Studies', type: 'N' },
      { code: 'DES', name: 'Design', type: 'N' },
@@ -73,7 +73,7 @@ The callback(school) recieves ONE object of each school, which contains an objec
 Based on the value parameters, the callback will recieve different types of data:
 
 * ```{term: "####"}``` *current term is default*
-* ```TROJAN.school((school)=>{/* */})``` *Alias of <b>dept_raw</b>.* 
+* ```TROJAN.school((school)=>{/* */})``` *Alias of <b>dept_raw</b>.*
 * ```TROJAN.school((school)=>{/* */},{school: "AAAA"})``` *Filtered by school (returns 1 object)*
 * ```TROJAN.school((code)=>{/* */},{justcode: true})``` *code = string of each school code, asynchronous for each, e.g. "FINE"*
 
@@ -103,7 +103,7 @@ This function sends different types of data depending on value parameter, but wi
 { IsCrossListed: 'N',
   PublishedCourseID: 'CSCI-794D',
   ScheduledCourseID: 'CSCI-794D',
-  CourseData: 
+  CourseData:
    { prefix: 'CSCI',
      number: '794',
      sequence: 'D',
