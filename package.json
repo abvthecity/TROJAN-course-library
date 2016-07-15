@@ -17,6 +17,9 @@
   },
   "homepage": "https://github.com/ninjiangstar/TROJAN-Course-API#readme",
   "dependencies": {
-    "async": "^2.0.0"
+    "lodash": "^4.13.1",
+    "promise": "^7.1.1",
+    "reqwest": "^2.0.5",
+    "xhr2": "^0.1.3"
   }
 }
