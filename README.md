@@ -1,136 +1,219 @@
-# TROJAN Course API
+# TROJAN Course API v2
 
-TROJAN Course API is fast, asyncronous, unofficial course catalogue API that can be used to develop course tools for USC with javascript.
+TROJAN Course API is fast, asyncronous, unofficial course catalogue API that can be used to develop course tools for USC with javascript. In version 2, I've re-wrote every method from scratch. Here's why:
 
-## Version 2 is coming soon. The following will no longer apply soon.
+1. Data coming from the official API is not normalized. Some values disappear, other values would change from string to object. All data in this API has been transformed and normalized so you don't have to worry.
+2. Now using Promises instead of Async. The previous implementation was too messy to interface with.
+3. AJAX throttling. I've wrote the requests to USC's server to be fail-proof. Meaning, as soon as we get an error from the server, it will try again.
 
 ## Basic usage
 ```javascript
-  const TROJAN = require('TROJAN');
-
-  // TROJAN.method_name(callback, valobject) // PARAMETERS
-  //
-  // TROJAN.term(console.log) // ['20152','20153','20161']
-  // TROJAN.current_term(console.log) // 20161
-  // TROJAN.dept_raw(console.log, {term: "20161"}) // each department
+  var TROJAN = require('TROJAN');
   ....
 ```
 
-Since the entire API runs asynchronously, the methods do not directly return any value.
-This means ```var term = TROJAN.term()``` WILL NOT work.
-Instead, each method will return
+### Methods
+* standard
+  * terms()
+  * current_term()
+  * depts(term)
+  * dept(dept, term)
+  * courses(dept, term)
+  * dept_info(dept, term)
+* querying
+  * course(dept, num, seq, term)
+  * section(dept, num, seq, sect, term)
+* transforming
+  * depts_flat(term)
+  * deptsY(term)
+  * deptsC(term)
+  * deptsN(term)
+  * deptBatch(array_of_depts)
 
+*NOTE: including `term` as a parameter is always optional. If you leave it out, the current-most term will be used. However, that means performing more server GET requests, so it's gonna be slightly slower.*
 
-## Methods
-* term
-* current_term
-* dept_raw
-* school
-* dept
-* dept_info
-* course_raw
-* course
-* sect
-
-### term
-The callback(terms) recieves an array of active terms in the database (usually the past 3 terms).
-
-### current_term
-The callback(term) recieves the current term as a string. eg. "20161"
-
-### dept_raw
-The callback(school) recieves ONE object of each school, which contains an object of each nested department.
-
-**Value Parameters**
-
-* ```{term: "####"}``` *current term is default*
-
-**Example object**
-
+### terms()
 ```javascript
-{ code: 'FINE',
-  name: 'Roski School of Art and Design',
-  type: 'Y',
-  department:
-   [ { code: 'ART', name: 'Art', type: 'N' },
-     { code: 'CRIT', name: 'Critical Studies', type: 'N' },
-     { code: 'DES', name: 'Design', type: 'N' },
-     { code: 'FA', name: 'Fine Arts', type: 'C' },
-     { code: 'FACE', name: 'Ceramics', type: 'C' },
-     { code: 'FACS', name: 'Critical Studies', type: 'C' },
-     { code: 'FADN', name: 'Design', type: 'C' },
-     { code: 'FADW', name: 'Drawing', type: 'C' },
-     { code: 'FAIN', name: 'Intermedia', type: 'N' },
-     { code: 'FAPH', name: 'Photography', type: 'C' },
-     { code: 'FAPT', name: 'Painting', type: 'N' },
-     { code: 'FAPR', name: 'Printmaking', type: 'N' },
-     { code: 'FASC', name: 'Sculpture', type: 'N' },
-     { code: 'PAS', name: 'Public Art Studies', type: 'N' } ] }
+TROJAN.terms().then(console.log);
 ```
-*IMPORTANT: dept_raw repeats for EACH school, asynchronously*
-
-### school
-Based on the value parameters, the callback will recieve different types of data:
-
-* ```{term: "####"}``` *current term is default*
-* ```TROJAN.school((school)=>{/* */})``` *Alias of <b>dept_raw</b>.*
-* ```TROJAN.school((school)=>{/* */},{school: "AAAA"})``` *Filtered by school (returns 1 object)*
-* ```TROJAN.school((code)=>{/* */},{justcode: true})``` *code = string of each school code, asynchronous for each, e.g. "FINE"*
-
-### dept
-Based on the value parameters, the callback will recieve different types of data:
-
-* ```{term: "####"}``` *current term is default*
-* ```TROJAN.dept((dept)=>{/* */})``` *Returns object ```{ code: 'ARTL', name: 'Arts Leadership', type: 'N' }```, asynchronous for each dept*
-* ```TROJAN.dept((dept)=>{/* */}, {school: "AAAA"})``` *Filtered by school, asynchronous for each dept*
-* ```TROJAN.dept((code)=>{/* */}, {justcode: true})``` *code = string of each department code, asynchronous for each, e.g. "CSCI"*
-
-### dept_info
-The callback will recieve the object of each department's information, asyncronously for each department.
-
-* ```{term: "####"}``` *current term is default*
-* ```{dept: "AAAA"}``` *filters to show object of one department*
-
-### course_raw
-This function sends different types of data depending on value parameter, but will **NOT** work without either the dept or justcode parameters. Please include either, or both.
-
-* ```{term: "####"}``` *current term is default*
-* ```{dept: "AAAA"}``` *object of course data, example below.*
-* ```{justcode: true}``` *only the string for course ID, e.g. "CSCI-140", will be sent. It will repeat for all courses for all departments if a dept is not provided.
-
-**Course data object example**
 ```javascript
-{ IsCrossListed: 'N',
-  PublishedCourseID: 'CSCI-794D',
-  ScheduledCourseID: 'CSCI-794D',
-  CourseData:
-   { prefix: 'CSCI',
-     number: '794',
-     sequence: 'D',
-     suffix: {},
-     title: 'Doctoral Dissertation',
-     description: 'Credit on acceptance of Dissertation. Graded CR/NC.',
-     units: '2.0',
-     restriction_by_major: {},
-     restriction_by_class: ' Registration open to the following class level(s): Doctoral Student',
-     restriction_by_school: {},
-     CourseNotes: {},
-     CourseTermNotes: {},
-     prereq_text: 'CSCI-794c',
-     coreq_text: {},
-     SectionData: { ... } } }
- ```
+['20161', '20162', '20163']
+```
 
-### course
-Will send to callback one object of the data of the selected course.
+### current_term()
+```javascript
+TROJAN.current_term().then(console.log);
+```
+```javascript
+20163
+```
 
-* ```{term: "####"}``` *current term is default*
-* ```{course: "AAAA-###"}``` *(<b>REQUIRED</b>) works even if there is a letter sequence attached to the end, e.g. "CSCI-140L"*
+### depts(term)
+Gets you an object of all the departments. There are two levels apparently of departments nested within departments (usually school code).
+```javascript
+TROJAN.depts().then(console.log);
+```
+```javascript
+{ DRNS:
+  { name: 'Dornsife College of Letters, Arts and Sciences',
+    type: 'Y',
+    depts:
+    { AHIS: [Object],
+      ALI: [Object],
+      ... } }
+  ... }
+```
 
-### sect
-Will send to callback different types of data, provided that a course is selected.
+### dept(dept, term)
+Get a snapshot of the department, its info, and its courses
+```javascript
+TROJAN.dept('CSCI').then(console.log);
+```
+```javascript
+{
+  ts: 1469142625000, // when this database was last updated
+  meta: {...}, // info about the department itself
+  courses: {...}, // all courses under this dept
+}
+```
 
-* ```{term: "####"}``` *current term is default*
-* ```{course: "AAAA-###"}``` *(<b>REQUIRED</b>) sends the object of each section's information within the course*
-* ```{sect: "#####"}``` *Filters the sections to one object*
-* ```{justcode: true}``` *Returns only the string of the ID of each section, although only useful when {sect} has no value.*
+### courses(dept, term)
+You can also get here by `dept(dept, term)` -> `.courses`.
+```javascript
+TROJAN.courses('CSCI').then(console.log);
+```
+```javascript
+{ 'CSCI-100':
+  { isCrossListed: false,
+    courseId: 'CSCI-100',
+    prefix: 'CSCI',
+    number: '100',
+    sequence: null,
+    suffix: 'xg',
+    title: 'Explorations in Computing',
+    description: 'A behind-the-scenes overview of the computational/algorithmic principles that form the basis of today&apos;s digital society. Exploration areas include social media, web search, videogames and location-based services.',
+    units: '4.0, 0',
+    restrictions: [Object],
+    CourseNotes: null,
+    CourseTermNotes: null,
+    prereq_text: null,
+    coreq_text: null,
+    sections: [Object] },
+  ... }
+```
+
+### dept_info(dept, term)
+You can also get here by `dept(dept, term)` -> `.meta`.
+```javascript
+TROJAN.dept_info('CSCI').then(console.log);
+```
+```javascript
+{ department: 'Computer Science',
+  abbreviation: 'CSCI',
+  phone_number: '   -    ',
+  address: null,
+  ugrad_dclass_phone_number: '(213)740-4494',
+  ugrad_dclass_address: 'SAL 104',
+  grad_dclass_phone_number: '   -    ',
+  grad_dclass_address: null,
+  Notes: 'D class assignments for undergraduates are available via email at: csdept@usc.edu. D class assignments for graduate students are only available on line at: myviterbi.usc.edu. Once you create your myViterbi profile, select the "D-Clearance Request Manager" to submit requests for graduate CSCI courses. To be enrolled in an off-campus course, you MUST also be enrolled in the Distance Education Network (DEN). For more information, call 740-4488 or go to den.usc.edu. DEN courses are indicated by a location of DEN@Viterbi.',
+  TermNotes: null }
+```
+
+### course(dept, num, seq, term)
+```javascript
+TROJAN.course('CTAN', '450').then(console.log);
+```
+```javascript
+{ 'CTAN-450A':
+  { isCrossListed: false,
+    courseId: 'CTAN-450A',
+    prefix: 'CTAN',
+    number: '450',
+    sequence: 'A',
+    suffix: null,
+    title: 'Animation Theory and Techniques',
+    description: 'Methods for creating animation blending traditional techniques with contemporary technologies.',
+    units: '2.0',
+    restrictions: { major: null, class: null, school: null },
+    CourseNotes: null,
+    CourseTermNotes: null,
+    prereq_text: null,
+    coreq_text: null,
+    sections: { '17874': [Object] } },
+  'CTAN-450B':
+  { isCrossListed: false,
+    courseId: 'CTAN-450B',
+    prefix: 'CTAN',
+    number: '450',
+    sequence: 'B',
+    suffix: null,
+    title: 'Animation Theory and Techniques',
+    description: 'Instruction in methods for planning and executing a short animated film. Topics covered include storyboarding, visual development and production planning.',
+    units: '2.0',
+    restrictions: { major: null, class: null, school: null },
+    CourseNotes: null,
+    CourseTermNotes: null,
+    prereq_text: 'CTAN-450A',
+    coreq_text: null,
+    sections: { '17880': [Object] } } }
+```
+
+### section(dept, num, seq, sect, term)
+```javascript
+TROJAN.section('CTAN', 450, 'A', 17874).then(console.log);
+```
+```javascript
+{ session: '001',
+  dclass_code: 'R',
+  title: 'Animation Theory and Techniques',
+  section_title: null,
+  description: null,
+  notes: null,
+  type: 'Lec-Lab',
+  units: '2.0',
+  spaces_available: '15',
+  number_registered: '4',
+  wait_qty: '0',
+  canceled: false,
+  blackboard: false,
+  fee: { description: null, amount: null },
+  day:
+    { M: false,
+      T: false,
+      W: true,
+      H: false,
+      F: true,
+      S: false,
+      U: false },
+  start_time: [ '13:00', '09:00' ],
+  end_time: [ '15:50', '11:50' ],
+  location: [ 'RZC117', 'SCB102' ],
+  instructor:
+    { last_name: 'Smith',
+      first_name: 'Kathy',
+      bio_url: 'http://www.kathymoods.org' },
+  syllabus: { format: null, filesize: null },
+  IsDistanceLearning: false }
+```
+
+### depts_flat(term)
+Recursively flattens the object of departments from `dept(term)`.
+
+### deptsY(term)
+Outputs an object of departments of type Y.
+
+### deptsC(term)
+Outputs an object of departments of type C.
+
+### deptsN(term)
+Outputs an object of departments of type N.
+
+### deptBatch(array_of_depts)
+Given an input of, for example, `['CSCI', 'EE', 'BISC']`, you will get all the `dept(dept, term)` for each in a single object.
+
+## Conclusion
+
+Thanks for taking a look at this API. Please use it responsibly!
+
+Authored by Andrew Jiang.

@@ -1,11 +1,11 @@
 var TROJAN = require('./TROJAN');
+var _ = require('lodash');
 
-TROJAN.deptsY().then(function (res) {
-  console.log(res);
+var oldTime = Date.now();
 
-  // for (var key in res.courses) {
-  //   for (var sid in res.courses[key].sections) {
-  //     console.log(res.courses[key].sections[sid].day);
-  //   }
-  // }
-});
+TROJAN.deptsN(20163).then(function (dlist) {
+  TROJAN.deptBatch(Object.keys(dlist), 20163).then(function (data) {
+    console.log(data);
+    console.log('TIME ELAPSED: ', Date.now() - oldTime);
+  }, console.error);
+}, console.error);

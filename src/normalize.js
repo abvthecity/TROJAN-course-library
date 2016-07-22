@@ -92,7 +92,7 @@ normalize.courseArray = function (data) {
 
   var object = {};
   if (_.isArray(data)) {
-    data = _.map(data, function (item) {
+    _.map(data, function (item) {
       _.assign(object, normalize.course(item));
     });
   } else {
@@ -111,7 +111,7 @@ normalize.sectionArray = function (data) {
 
   var object = {};
   if (_.isArray(data)) {
-    data = _.map(data, function (item) {
+    _.map(data, function (item) {
       _.assign(object, normalize.section(item));
     });
   } else {
@@ -127,6 +127,35 @@ normalize.classes = function (data) {
     ? normalize.courseArray(data.OfferedCourses.course) : null;
   var meta = normalize.deptInfo(data.Dept_Info);
   return { ts, meta, courses };
+};
+
+normalize.depts = function (data) {
+  var object = {};
+  _.map(data, function (deptY) {
+    var depts = {};
+    if (!_.isArray(deptY.department)) {
+      if (_.isObject(deptY.department)) {
+        deptY.department = [deptY.department];
+      } else {
+        depts = null;
+      }
+    }
+
+    _.map(deptY.department, function (deptN) {
+      depts[deptN.code] = {
+        name: str(deptN.name),
+        type: deptN.type,
+      };
+    });
+
+    object[deptY.code] = {
+      name: str(deptY.name),
+      type: deptY.type,
+      depts,
+    };
+  });
+
+  return object;
 };
 
 module.exports = normalize;
