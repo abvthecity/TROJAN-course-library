@@ -8,7 +8,7 @@ TROJAN Course API is fast, asyncronous, unofficial course catalogue API that can
 
 ## Basic usage
 ```javascript
-  var TROJAN = require('TROJAN');
+  var TROJAN = require('trojan-course-api');
   ....
 ```
 
