@@ -236,7 +236,8 @@ TROJAN.deptBatch = function (depts, term) {
   });
 };
 
-TROJAN.combinations = function (sections) {
+TROJAN.combinations = function (coursedata) {
+  var sections = coursedata.sections;
   return new Promise(function (resolve, reject) {
     var object = combinations.generate(sections);
     resolve(object);
