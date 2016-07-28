@@ -82,11 +82,11 @@ combinations.buckets = function (sections) {
   for (var i in sectionOrder) {
 
     // check if we should be creating new buckets
-    if (orderIsImportant
+    if (!_.isEmpty(bucket) && (
+        orderIsImportant
       && typeOrder[i] == typeOrder[0] // every round
-      && !_.isEmpty(bucket) // don't push the first
       || typeOrder[i].indexOf('-') > -1 // lec-lab / lec-dis appearances
-    ) {
+    )) {
       buckets.push(bucket);
       bucket = {};
     }

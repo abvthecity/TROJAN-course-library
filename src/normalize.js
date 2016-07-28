@@ -175,6 +175,10 @@ function str(data) {
 
 function convertDays(day) {
   if (day == null) return;
+  if (_.isArray(day)) {
+    return _.map(day, convertDays);
+  }
+
   return {
     M: (day.indexOf('M') > -1),
     T: (day.indexOf('T') > -1),
