@@ -202,7 +202,7 @@ function str(data) {
 }
 
 function convertDays(day) {
-  if (day == null) return;
+  if (day == null) return null;
   if (_.isArray(day)) {
     return _.map(day, convertDays);
   }

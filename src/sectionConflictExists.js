@@ -35,6 +35,10 @@ function sectionConflictExists(a, b) {
 };
 
 function dayConflictExists(day1, day2) {
+  if (day1 == null || day2 == null) {
+    return false;
+  }
+
   // returns true if there is a conflict
   for (var key in Object.keys(day1)) {
     if (day1[key] && day2[key]) return true;
