@@ -168,14 +168,15 @@ combinations.sectionOrder = function (sections) {
 
   // 1. sort, with dclass_code
   sectionKeys = Object.keys(sections);
-  var sectionOrder = _.map(sectionKeys, function returnKeyWithDclass(key) {
-    if (sections[key].dclass_code == null) sections[key].dclass_code = 'A';
-    return sections[key].dclass_code + key;
+  var sectionOrder = _.map(sectionKeys, function (key) {
+    // if (sections[key].dclass_code == null) sections[key].dclass_code = 'A';
+    // return sections[key].dclass_code + key;
+    return key;
   }).sort();
 
   // 2. remove dclass_code
   return _.map(sectionOrder, function returnCleanSection(key) {
-    return Math.round(key.slice(1));
+    return Math.round(key.slice(0));
   });
 };
 
