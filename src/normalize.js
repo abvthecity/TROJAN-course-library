@@ -46,26 +46,54 @@ normalize.section = function (data) {
     wait_qty: str(data.wait_qty),
     canceled: str(data.canceled),
     blackboard: str(data.blackboard),
-    fee: {
-      description: (data.fee) ? str(data.fee.description) : null,
-      amount: (data.fee) ? str(data.fee.amount) : null,
-    },
+    fee: normalize.fee(data.fee),
     day: convertDays(str(data.day)),
     start_time: str(data.start_time),
     end_time: str(data.end_time),
     location: str(data.location),
-    instructor: {
-      last_name: (data.instructor) ? str(data.instructor.last_name) : null,
-      first_name: (data.instructor) ? str(data.instructor.first_name) : null,
-      bio_url: (data.instructor) ? str(data.instructor.bio_url) : null,
-    },
-    syllabus: {
-      format: (data.syllabus) ? str(data.syllabus.format) : null,
-      filesize: (data.syllabus) ? str(data.syllabus.filesize) : null,
-    },
+    instructor: normalize.instructor(data.instructor),
+    syllabus: normalize.syllabus(data.syllabus),
     IsDistanceLearning: (str(data.IsDistanceLearning) == 'Y'),
   };
   return object;
+};
+
+normalize.syllabus = function (data) {
+  if (str(data) == null || str(data.format) == null) {
+    return null;
+  }
+
+  return {
+    format: str(data.format),
+    filesize: str(data.filesize),
+  };
+};
+
+normalize.fee = function (data) {
+  if (str(data) == null) {
+    return null;
+  }
+
+  return {
+    description: str(data.description),
+    amount: str(data.amount),
+  };
+};
+
+normalize.instructor = function (data) {
+  if (str(data) == null) {
+    return null;
+  }
+
+  if (_.isArray(data)) {
+    return _.map(data, normalize.instructor);
+  }
+
+  return {
+    last_name: str(data.last_name),
+    first_name: str(data.first_name),
+    bio_url: str(data.bio_url),
+  };
 };
 
 normalize.deptInfo = function (data) {
