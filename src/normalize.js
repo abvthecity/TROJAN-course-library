@@ -7,7 +7,7 @@ var normalize = {};
 normalize.course = function (data) {
   var object = {};
   object[str(data.PublishedCourseID)] = {
-    isCrossListed: str(data.IsCrossListed),
+    isCrossListed: (str(data.IsCrossListed) == 'Y'),
     courseId: str(data.ScheduledCourseID),
     prefix: str(data.CourseData.prefix),
     number: str(data.CourseData.number),
@@ -63,7 +63,7 @@ normalize.section = function (data) {
       format: (data.syllabus) ? str(data.syllabus.format) : null,
       filesize: (data.syllabus) ? str(data.syllabus.filesize) : null,
     },
-    IsDistanceLearning: str(data.IsDistanceLearning),
+    IsDistanceLearning: (str(data.IsDistanceLearning) == 'Y'),
   };
   return object;
 };
@@ -163,8 +163,6 @@ module.exports = normalize;
 function str(data) {
   if (typeof data === 'undefined') return null;
   if (data == '' || data == 'TBA') return null;
-  if (data == 'N') return false;
-  if (data == 'Y') return true;
 
   if (_.isObject(data)) {
     if (_.isEmpty(data)) {

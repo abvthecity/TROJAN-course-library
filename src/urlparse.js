@@ -16,7 +16,7 @@ module.exports = function (url) {
 
         error: function (err) {
           console.error('ajax err:', err._url.href);
-          setTimeout(buffer, 1000);
+          setTimeout(buffer, 200);
         },
       });
     }

@@ -28,7 +28,10 @@ TROJAN Course API is fast, asyncronous, unofficial course catalogue API that can
   * deptsY(term)
   * deptsC(term)
   * deptsN(term)
-  * deptBatch(array_of_depts)
+  * deptsCN(term)
+  * deptBatch_cb(array_of_depts, term, callback)
+  * deptBatch(array_of_depts, term)
+  * combinations(sections);
 
 *NOTE: including `term` as a parameter is always optional. If you leave it out, the current-most term will be used. However, that means performing more server GET requests, so it's gonna be slightly slower.*
 
@@ -211,6 +214,45 @@ Outputs an object of departments of type N.
 
 ### deptBatch(array_of_depts)
 Given an input of, for example, `['CSCI', 'EE', 'BISC']`, you will get all the `dept(dept, term)` for each in a single object.
+
+### combinations(course)
+Given an input of an object of a course (which is usually returned by course()), this will give an output array of all the possible section combinations of the course. For example, inputting the course data for `ISE-570` will return:
+```javascript
+[ [ 30101, 29911, 29923 ],
+  [ 30101, 29912, 29923 ],
+  [ 30101, 29915, 29923 ],
+  [ 30101, 29928, 29923 ],
+  [ 30101, 30000, 29923 ],
+  [ 30101, 30107, 29923 ],
+  [ 30101, 30199, 29923 ],
+  [ 30101, 30204, 29923 ],
+  [ 30101, 30271, 29923 ],
+  [ 30101, 30287, 29923 ],
+  [ 30101, 30290, 29923 ],
+  [ 30101, 30291, 29923 ],
+  [ 30101, 30292, 29923 ],
+  [ 30101, 30293, 29923 ],
+  [ 30101, 30294, 29923 ],
+  [ 30101, 30399, 29923 ],
+  [ 30102, 29911, 29923 ],
+  [ 30102, 29912, 29923 ],
+  [ 30102, 29915, 29923 ],
+  [ 30102, 29928, 29923 ],
+  [ 30102, 30000, 29923 ],
+  [ 30102, 30107, 29923 ],
+  [ 30102, 30199, 29923 ],
+  [ 30102, 30204, 29923 ],
+  [ 30102, 30271, 29923 ],
+  [ 30102, 30287, 29923 ],
+  [ 30102, 30290, 29923 ],
+  [ 30102, 30291, 29923 ],
+  [ 30102, 30292, 29923 ],
+  [ 30102, 30293, 29923 ],
+  [ 30102, 30294, 29923 ],
+  [ 30102, 30399, 29923 ],
+  [ 30099, 30152, 30253 ] ]
+```
+You're welcome.
 
 ## Conclusion
 

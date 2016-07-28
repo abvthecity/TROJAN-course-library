@@ -3,6 +3,7 @@ var _ = require('lodash');
 var Promise = require('promise');
 var urlparse = require('./src/urlparse');
 var normalize = require('./src/normalize');
+var combinations = require('./src/combinations');
 
 var TROJAN = {};
 
@@ -10,7 +11,7 @@ var TROJAN = {};
 
 TROJAN.terms = function () {
   return new Promise(function (resolve, reject) {
-    urlparse('/terms').then(function (res) {
+    urlparse('/terms').then(function returnTerms(res) {
       resolve(res.term);
     }, reject);
   });
@@ -18,7 +19,7 @@ TROJAN.terms = function () {
 
 TROJAN.current_term = function () {
   return new Promise(function (resolve, reject) {
-    TROJAN.terms().then(function (res) {
+    TROJAN.terms().then(function returnCurrentTerm(res) {
       resolve(res[res.length - 1]);
     }, reject);
   });
@@ -27,7 +28,7 @@ TROJAN.current_term = function () {
 TROJAN.depts = function (term) {
   return new Promise(function (resolve, reject) {
     function getDepts(term) {
-      urlparse('/depts/' + term).then(function (res) {
+      urlparse('/depts/' + term).then(function returnDeptsObject(res) {
         resolve(normalize.depts(res.department));
       }, reject);
     }
@@ -40,7 +41,7 @@ TROJAN.depts = function (term) {
 TROJAN.dept = function (dept, term) {
   return new Promise(function (resolve, reject) {
     function getClasses(term) {
-      urlparse('/classes/' + dept + '/' + term).then(function (res) {
+      urlparse('/classes/' + dept + '/' + term).then(function returnDept(res) {
         resolve(normalize.classes(res));
       }, reject);
     }
@@ -52,47 +53,68 @@ TROJAN.dept = function (dept, term) {
 
 TROJAN.courses = function (dept, term) {
   return new Promise(function (resolve, reject) {
-    TROJAN.dept(dept, term).then(function (data) {
+    if (_.isObject(dept)) returnCourses(dept);
+    else TROJAN.dept(dept, term).then(returnCourses);
+
+    function returnCourses(data) {
       resolve(data.courses);
-    });
+    }
   });
 };
 
 TROJAN.dept_info = function (dept, term) {
   return new Promise(function (resolve, reject) {
-    TROJAN.dept(dept, term).then(function (data) {
+    if (_.isObject(dept)) returnDeptInfo(dept);
+    else TROJAN.dept(dept, term).then(returnDeptInfo);
+
+    function returnDeptInfo(data) {
       resolve(data.meta);
-    });
+    }
   });
 };
 
 /* ————— QUERYING ————— */
 
 TROJAN.course = function (dept, num, seq, term) {
+  dept = _.upperCase(dept); // insurance
+  num = Math.round(num);
+  if (_.isString(seq)) seq = _.upperCase(seq); // insurance
   return new Promise(function (resolve, reject) {
-    TROJAN.courses(dept, term).then(function (data) {
+    if (_.isObject(dept)) returnCourse(dept);
+    else TROJAN.courses(dept, term).then(returnCourse);
+
+    function returnCourse(data) {
       var object = {};
-      _.forEach(data, function (val, key) {
-        if (val.number == num) {
-          if (seq) {
-            if (val.sequence == seq) {
+
+      var seq2 = (seq == null) ? '' : seq;
+      if (!_.isUndefined(data[dept + '-' + num + seq2])) {
+        object[dept + '-' + num + seq2] = data[dept + '-' + num + seq2];
+      } else {
+        // for each matching query, append to object
+        _.forEach(data, function (val, key) {
+          if (val.number == num) {
+            if (seq) {
+              if (val.sequence == seq) {
+                object[key] = val;
+              }
+            } else {
               object[key] = val;
             }
-          } else {
-            object[key] = val;
           }
-        }
-      });
+        });
+      }
 
       resolve(object);
-    });
+    }
   });
 };
 
 TROJAN.section = function (dept, num, seq, sect, term) {
   return new Promise(function (resolve, reject) {
-    TROJAN.course(dept, num, seq, term).then(function (data) {
-      var object = {};
+    if (_.isObject(dept)) returnSection(dept);
+    else TROJAN.course(dept, num, seq, term).then(returnSection);
+
+    function returnSection(data) {
       _.forEach(data, function (val, key) {
         if (val.sections) {
           _.forEach(val.sections, function (sval, skey) {
@@ -100,9 +122,7 @@ TROJAN.section = function (dept, num, seq, sect, term) {
           });
         }
       });
-
-      resolve(object);
-    });
+    }
   });
 };
 
@@ -110,7 +130,10 @@ TROJAN.section = function (dept, num, seq, sect, term) {
 
 TROJAN.depts_flat = function (term) {
   return new Promise(function (resolve, reject) {
-    TROJAN.depts(term).then(function (res) {
+    if (_.isObject(term)) returnDeptsFlat(term);
+    else TROJAN.depts(term).then(returnDeptsFlat);
+
+    function returnDeptsFlat(res) {
       var object = {};
 
       function findDeptNRecurse(res) {
@@ -128,7 +151,7 @@ TROJAN.depts_flat = function (term) {
 
       findDeptNRecurse(res);
       resolve(object);
-    });
+    }
   });
 };
 
@@ -174,11 +197,25 @@ TROJAN.deptsN = function (term) {
   });
 };
 
+TROJAN.deptsCN = function (term) {
+  return new Promise(function (resolve, reject) {
+    TROJAN.depts_flat(term).then(function (res) {
+      var object = {};
+      _.forEach(res, function (val, key) {
+        if (val.type == 'C' || val.type == 'N')
+        object[key] = val.name;
+      });
+
+      resolve(object);
+    });
+  });
+};
+
 TROJAN.deptBatch_cb = function (depts, term, cb) {
   function getClasses(term) {
     _.forEach(depts, function (dept) {
       TROJAN.dept(dept, term).then(function (data) {
-        cb({ dept, data });
+        cb(data);
       });
     });
   }
@@ -191,11 +228,18 @@ TROJAN.deptBatch = function (depts, term) {
   return new Promise(function (resolve, reject) {
     var object = {};
     TROJAN.deptBatch_cb(depts, term, function (data) {
-      object[data.dept] = data.data;
+      object[data.meta.abbreviation] = data;
       if (Object.keys(object).length == depts.length) {
         resolve(object);
       }
     });
+  });
+};
+
+TROJAN.combinations = function (sections) {
+  return new Promise(function (resolve, reject) {
+    var object = combinations.generate(sections);
+    resolve(object);
   });
 };
 
