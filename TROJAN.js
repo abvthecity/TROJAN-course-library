@@ -51,6 +51,41 @@ TROJAN.dept = function (dept, term) {
   });
 };
 
+TROJAN.session = function (session, term) {
+  return new Promise(function (resolve, reject) {
+    function getSessionInfo(term) {
+      urlparse('/session/' + session + '/' + term).then(function returnSess(res) {
+        if (_.isEmpty(res)) reject('Not a valid session.');
+        resolve(normalize.session(res));
+      },
+
+      function (e) {
+        reject('Session ID is invalid.');
+      });
+    }
+
+    if (term) getSessionInfo(term);
+    else TROJAN.current_term().then(getSessionInfo, reject);
+  });
+};
+
+TROJAN.booklist = function (section, term) {
+  return new Promise(function (resolve, reject) {
+    function getBookList(term) {
+      urlparse('/booklist/' + section + '/' + term).then(function returnBooklist(res) {
+        resolve(normalize.booklist(res));
+      },
+
+      function (e) {
+        reject('No booklist found.');
+      });
+    }
+
+    if (term) getBookList(term);
+    else TROJAN.current_term().then(getBookList, reject);
+  });
+};
+
 TROJAN.courses = function (dept, term) {
   return new Promise(function (resolve, reject) {
     if (_.isObject(dept)) returnCourses(dept);

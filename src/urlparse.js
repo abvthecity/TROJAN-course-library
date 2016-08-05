@@ -10,8 +10,13 @@ module.exports = function (url) {
         method: 'get',
         error: reject,
         success: function (res) {
-          var data = JSON.parse(res);
-          resolve(data);
+          try {
+            var data = JSON.parse(res);
+            resolve(data);
+          }
+          catch (e) {
+            reject(e);
+          }
         },
 
         error: function (err) {

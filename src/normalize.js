@@ -186,6 +186,48 @@ normalize.depts = function (data) {
   return object;
 };
 
+normalize.session = function (data) {
+
+  function parseDate(date) {
+    date = str(date);
+
+    // date = Date.parse(date);
+    return date;
+  }
+
+  return {
+    first_day_of_classes: parseDate(data.first_day_of_classes),
+    last_day_to_add: parseDate(data.last_day_to_add),
+    last_day_to_drop_without_w: parseDate(data.last_day_to_drop_without_w),
+    last_day_to_drop_with_w: parseDate(data.last_day_to_drop_with_w),
+    end_of_session: parseDate(data.end_of_session),
+    last_day_to_change_enropt: parseDate(data.last_day_to_change_enropt),
+  };
+};
+
+normalize.booklist = function (data) {
+
+  if (_.isArray(data)) {
+    return _.map(data, normalize.booklist);
+  }
+
+  return {
+    ISBN: str(data.ISBN),
+    Author: str(data.Author),
+    Title: str(data.Title),
+    Required: (data.Required_or_Optional == 'RQ') ? true : false,
+    Price: {
+      New: str(data.New_Price),
+      Used: str(data.Used_Price),
+      Rental_New: str(data.New_Rental_Price),
+      Rental_Used: str(data.Used_Rental_Price),
+      Ebook: str(data.Ebook_Price),
+    },
+    Notes: str(data.Notes),
+    Comments: str(data.Comments),
+  };
+};
+
 module.exports = normalize;
 
 function str(data) {
