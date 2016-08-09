@@ -1,6 +1,6 @@
 'use strict';
 var _ = require('lodash');
-var Promise = require('promise');
+var Promise = require('bluebird');
 var urlparse = require('./src/urlparse');
 var normalize = require('./src/normalize');
 var combinations = require('./src/combinations');

@@ -1,5 +1,5 @@
 var ajax = require('reqwest');
-var Promise = require('promise');
+var Promise = require('bluebird');
 
 module.exports = function (url) {
   return new Promise(function (resolve, reject) {

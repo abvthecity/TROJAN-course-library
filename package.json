@@ -1,8 +1,8 @@
 {
   "name": "trojan-course-api",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Course Catalogue Web API for USC (JS and Node.js, unofficial)",
-  "main": "TROJAN.js",
+  "main": "src/TROJAN.js",
   "scripts": {
     "test": "node tests.js"
   },
@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/ninjiangstar/TROJAN-Course-API#readme",
   "dependencies": {
+    "bluebird": "^3.4.1",
     "lodash": "^4.13.1",
     "promise": "^7.1.1",
     "reqwest": "^2.0.5",
