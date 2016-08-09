@@ -1,9 +1,9 @@
 'use strict';
 var _ = require('lodash');
 var Promise = require('bluebird');
-var urlparse = require('./src/urlparse');
-var normalize = require('./src/normalize');
-var combinations = require('./src/combinations');
+var urlparse = require('./urlparse');
+var normalize = require('./normalize');
+var combinations = require('./combinations');
 
 var TROJAN = {};
 
