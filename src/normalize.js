@@ -47,10 +47,7 @@ normalize.section = function (data) {
     canceled: str(data.canceled),
     blackboard: str(data.blackboard),
     fee: normalize.fee(data.fee),
-    day: convertDays(str(data.day)),
-    start_time: str(data.start_time),
-    end_time: str(data.end_time),
-    location: str(data.location),
+    block: normalize.block(data.day, data.start_time, data.end_time, data.location),
     instructor: normalize.instructor(data.instructor),
     syllabus: normalize.syllabus(data.syllabus),
     IsDistanceLearning: (str(data.IsDistanceLearning) == 'Y'),
@@ -58,10 +55,29 @@ normalize.section = function (data) {
   return object;
 };
 
-normalize.syllabus = function (data) {
-  if (str(data) == null || str(data.format) == null) {
-    return null;
+normalize.block = function (day, start, end, location) {
+  var blockArray = [];
+  if (!_.isArray(day)) {
+    day = [day];
+    start = [start];
+    end = [end];
+    location = [location];
   }
+
+  for (var i in day) {
+    blockArray.push({
+      day: convertDays(str(day[i])),
+      start: str(start[i]),
+      end: str(end[i]),
+      location: str(location[i]),
+    });
+  }
+
+  return blockArray;
+};
+
+normalize.syllabus = function (data) {
+  if (str(data) === null || str(data.format) === null) return null;
 
   return {
     format: str(data.format),
@@ -70,9 +86,7 @@ normalize.syllabus = function (data) {
 };
 
 normalize.fee = function (data) {
-  if (str(data) == null) {
-    return null;
-  }
+  if (str(data) === null) return null;
 
   return {
     description: str(data.description),
@@ -81,9 +95,7 @@ normalize.fee = function (data) {
 };
 
 normalize.instructor = function (data) {
-  if (str(data) == null) {
-    return null;
-  }
+  if (str(data) === null) return null;
 
   if (_.isArray(data)) {
     return _.map(data, normalize.instructor);
@@ -112,11 +124,7 @@ normalize.deptInfo = function (data) {
 };
 
 normalize.courseArray = function (data) {
-  if (_.isObject(data)) {
-    if (_.isEmpty(data)) {
-      return null;
-    }
-  }
+  if (str(data) === null) return null;
 
   var object = {};
   if (_.isArray(data)) {
@@ -131,11 +139,7 @@ normalize.courseArray = function (data) {
 };
 
 normalize.sectionArray = function (data) {
-  if (_.isObject(data)) {
-    if (_.isEmpty(data)) {
-      return null;
-    }
-  }
+  if (str(data) === null) return null;
 
   var object = {};
   if (_.isArray(data)) {
@@ -232,30 +236,13 @@ module.exports = normalize;
 
 function str(data) {
   if (typeof data === 'undefined') return null;
-  if (data == '' || data == 'TBA') return null;
-
-  if (_.isObject(data)) {
-    if (_.isEmpty(data)) {
-      return null;
-    }
-  }
+  if (data === '' || data === 'TBA') return null;
+  if (_.isObject(data) && _.isEmpty(data)) return null;
 
   return data;
 }
 
 function convertDays(day) {
   if (day == null) return null;
-  if (_.isArray(day)) {
-    return _.map(day, convertDays);
-  }
-
-  return {
-    M: (day.indexOf('M') > -1),
-    T: (day.indexOf('T') > -1),
-    W: (day.indexOf('W') > -1),
-    H: (day.indexOf('H') > -1),
-    F: (day.indexOf('F') > -1),
-    S: (day.indexOf('S') > -1),
-    U: (day.indexOf('U') > -1),
-  };
+  return _.toArray(day);
 }

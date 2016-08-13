@@ -181,17 +181,8 @@ TROJAN.section('CTAN', 450, 'A', 17874).then(console.log);
   canceled: false,
   blackboard: false,
   fee: { description: null, amount: null },
-  day:
-    { M: false,
-      T: false,
-      W: true,
-      H: false,
-      F: true,
-      S: false,
-      U: false },
-  start_time: [ '13:00', '09:00' ],
-  end_time: [ '15:50', '11:50' ],
-  location: [ 'RZC117', 'SCB102' ],
+  block: [ { day: [ 'W' ], start: '13:00', end: '15:50', location: 'RZC117' },
+    { day: [ 'F' ], start: '09:00', end: '11:50', location: 'SCB102' } ],
   instructor:
     { last_name: 'Smith',
       first_name: 'Kathy',
@@ -215,7 +206,7 @@ Outputs an object of departments of type N.
 ### deptBatch(array_of_depts)
 Given an input of, for example, `['CSCI', 'EE', 'BISC']`, you will get all the `dept(dept, term)` for each in a single object.
 
-### combinations(course)
+### combinations(coursedata)
 Given an input of an object of a course (which is usually returned by course()), this will give an output array of all the possible section combinations of the course. For example, inputting the course data for `ISE-570` will return:
 ```javascript
 [ [ 30101, 29911, 29923 ],

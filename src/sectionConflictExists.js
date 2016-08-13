@@ -1,32 +1,14 @@
 var _ = require('lodash');
 
-function sectionConflictExists(a, b) {
+function sectionConflictExists(sectionA, sectionB) {
   // returns true if there is a conflict
 
-  if (!_.isArray(a.day)) {
-    a.day = [a.day];
-    a.start_time = [a.start_time];
-    a.end_time = [a.end_time];
-  }
-
-  if (!_.isArray(b.day)) {
-    b.day = [b.day];
-    b.start_time = [b.start_time];
-    b.end_time = [b.end_time];
-  }
-
-  for (var i in a.day) {
-    for (var j in b.day) {
-      if (dayConflictExists(a.day[i], b.day[j])) {
-        var timeConflictDoesExist = timeConflictExists(
-          a.start_time[i],
-          a.end_time[i],
-          b.start_time[j],
-          b.end_time[j]
-        );
-
-        if (timeConflictDoesExist)
-          return true;
+  for (var a of sectionA.block) {
+    for (var a of sectionB.block) {
+      if (dayConflictExists(a.day, b.day)) {
+        if (timeConflictExists(
+          a.start, a.end, b.start, b.end
+        )) return true;
       }
     }
   }
