@@ -176,7 +176,7 @@ combinations.sectionOrder = function (sections) {
 
   // 2. remove dclass_code
   return _.map(sectionOrder, function returnCleanSection(key) {
-    return Math.round(key.slice(0));
+    return key.slice(0);
   });
 };
 

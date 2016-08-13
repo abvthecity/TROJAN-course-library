@@ -1,5 +1,5 @@
-var TROJAN = require('./TROJAN');
-var combinations = require('./src/combinations');
+var TROJAN = require('../src/TROJAN');
+var combinations = require('../src/combinations');
 var _ = require('lodash');
 
 var oldTime = Date.now();
