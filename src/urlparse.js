@@ -8,7 +8,6 @@ module.exports = function (url) {
       ajax({
         url: 'http://web-app.usc.edu/web/soc/api' + url,
         method: 'get',
-        error: reject,
         success: function (res) {
           try {
             var data = JSON.parse(res);
