@@ -47,7 +47,7 @@ normalize.section = function (data) {
     canceled: str(data.canceled),
     blackboard: str(data.blackboard),
     fee: normalize.fee(data.fee),
-    block: normalize.block(data.day, data.start_time, data.end_time, data.location),
+    blocks: normalize.blocks(data.day, data.start_time, data.end_time, data.location),
     instructor: normalize.instructor(data.instructor),
     syllabus: normalize.syllabus(data.syllabus),
     IsDistanceLearning: (str(data.IsDistanceLearning) == 'Y'),
@@ -55,7 +55,7 @@ normalize.section = function (data) {
   return object;
 };
 
-normalize.block = function (day, start, end, location) {
+normalize.blocks = function (day, start, end, location) {
   var blockArray = [];
   if (!_.isArray(day)) {
     day = [day];
