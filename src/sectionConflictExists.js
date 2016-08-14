@@ -4,7 +4,7 @@ function sectionConflictExists(sectionA, sectionB) {
   // returns true if there is a conflict
 
   for (var a of sectionA.block) {
-    for (var a of sectionB.block) {
+    for (var b of sectionB.block) {
       if (dayConflictExists(a.day, b.day)) {
         if (timeConflictExists(
           a.start, a.end, b.start, b.end

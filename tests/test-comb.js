@@ -2,8 +2,8 @@ var _ = require('lodash');
 var TROJAN = require('../src/TROJAN');
 var combinations = require('../src/combinations');
 
-var a = 'MKT';
-var b = 499;
+var a = 'CSCI';
+var b = 201;
 var c = '';
 TROJAN.course(a, b, c, 20163).then(function (course) {
   course = course[a + '-' + b + c];
