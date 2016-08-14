@@ -21,12 +21,7 @@ function dayConflictExists(day1, day2) {
     return false;
   }
 
-  // returns true if there is a conflict
-  for (var key in Object.keys(day1)) {
-    if (day1[key] && day2[key]) return true;
-  }
-
-  return false;
+  return (day1 === day2);
 }
 
 function timeConflictExists(start1, end1, start2, end2) {

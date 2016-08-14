@@ -57,6 +57,7 @@ normalize.section = function (data) {
 
 normalize.blocks = function (day, start, end, location) {
   var blockArray = [];
+
   if (!_.isArray(day)) {
     day = [day];
     start = [start];
@@ -65,12 +66,15 @@ normalize.blocks = function (day, start, end, location) {
   }
 
   for (var i in day) {
-    blockArray.push({
-      day: convertDays(str(day[i])),
-      start: str(start[i]),
-      end: str(end[i]),
-      location: str(location[i]),
-    });
+    var days = convertDays(str(day[i]));
+    for (var j in days) {
+      blockArray.push({
+        day: str(days[j]),
+        start: str(start[i]),
+        end: str(end[i]),
+        location: str(location[i]),
+      });
+    }
   }
 
   return blockArray;
