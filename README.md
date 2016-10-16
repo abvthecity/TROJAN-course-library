@@ -101,7 +101,8 @@ TROJAN.courses('CSCI').then(console.log);
     CourseTermNotes: null,
     prereq_text: null,
     coreq_text: null,
-    sections: [Object] },
+    sections: [Object],
+    ConcurrentCourse: null },
   ... }
 ```
 

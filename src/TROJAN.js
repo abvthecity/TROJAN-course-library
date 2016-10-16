@@ -12,7 +12,9 @@ var TROJAN = {};
 TROJAN.terms = function () {
   return new Promise(function (resolve, reject) {
     urlparse('/terms').then(function returnTerms(res) {
-      resolve(res.term);
+      resolve(res.term.map(function (term) {
+        return parseInt(term);
+      }));
     }, reject);
   });
 };
@@ -114,6 +116,7 @@ TROJAN.course = function (dept, num, seq, term) {
   dept = _.upperCase(dept); // insurance
   num = Math.round(num);
   if (_.isString(seq)) seq = _.upperCase(seq); // insurance
+
   return new Promise(function (resolve, reject) {
     if (_.isObject(dept)) returnCourse(dept);
     else TROJAN.courses(dept, term).then(returnCourse);
@@ -271,11 +274,15 @@ TROJAN.deptBatch = function (depts, term) {
   });
 };
 
-TROJAN.combinations = function (coursedata) {
+TROJAN.combinations_async = function (coursedata) {
   var sections = coursedata.sections;
+  var object = combinations.generate(sections);
+  return object;
+};
+
+TROJAN.combinations = function (coursedata) {
   return new Promise(function (resolve, reject) {
-    var object = combinations.generate(sections);
-    resolve(object);
+    resolve(TROJAN.combinations_async(coursedata));
   });
 };
 

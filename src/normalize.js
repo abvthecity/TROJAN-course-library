@@ -26,6 +26,7 @@ normalize.course = function (data) {
     prereq_text: str(data.CourseData.prereq_text),
     coreq_text: str(data.CourseData.coreq_text),
     sections: normalize.sectionArray(data.CourseData.SectionData),
+    ConcurrentCourse: (data.ConcurrentCourse) ? str(data.ConcurrentCourse.PublishedCourseID) : null,
   };
   return object;
 };
