@@ -17,7 +17,7 @@ function sectionConflictExists(sectionA, sectionB) {
 };
 
 function dayConflictExists(day1, day2) {
-  if (day1 == null || day2 == null) {
+  if (day1 === null || day2 === null) {
     return false;
   }
 
@@ -25,7 +25,7 @@ function dayConflictExists(day1, day2) {
 }
 
 function timeConflictExists(start1, end1, start2, end2) {
-  if (start1 == null || start2 == null) {
+  if (start1 === null || start2 === null) {
     return false;
   }
 
@@ -35,7 +35,7 @@ function timeConflictExists(start1, end1, start2, end2) {
   end2 = convertToMin(end2);
 
   // returns true if there is a conflict
-  if (start1 == start2) return true;
+  if (start1 === start2) return true;
 
   if (start1 < start2) {
     return (end1 > start2);

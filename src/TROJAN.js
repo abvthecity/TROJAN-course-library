@@ -10,88 +10,84 @@ var TROJAN = {};
 /* ————— STANDARD FUNCTIONS ————— */
 
 TROJAN.terms = function () {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     urlparse('/terms').then(function returnTerms(res) {
       resolve(res.term.map(function (term) {
         return parseInt(term);
       }));
-    }, reject);
+    }).catch(reject);
   });
 };
 
 TROJAN.current_term = function () {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     TROJAN.terms().then(function returnCurrentTerm(res) {
       resolve(res[res.length - 1]);
-    }, reject);
+    }).catch(reject);
   });
 };
 
 TROJAN.depts = function (term) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     function getDepts(term) {
       urlparse('/depts/' + term).then(function returnDeptsObject(res) {
         resolve(normalize.depts(res.department));
-      }, reject);
+      }).catch(reject);
     }
 
     if (term) getDepts(term);
-    else TROJAN.current_term().then(getDepts, reject);
+    else TROJAN.current_term().then(getDepts).catch(reject);
   });
 };
 
 TROJAN.dept = function (dept, term) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     function getClasses(term) {
       urlparse('/classes/' + dept + '/' + term).then(function returnDept(res) {
         resolve(normalize.classes(res));
-      }, reject);
+      }).catch(reject);
     }
 
     if (term) getClasses(term);
-    else TROJAN.current_term().then(getClasses, reject);
+    else TROJAN.current_term().then(getClasses).catch(reject);
   });
 };
 
 TROJAN.session = function (session, term) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     function getSessionInfo(term) {
       urlparse('/session/' + session + '/' + term).then(function returnSess(res) {
         if (_.isEmpty(res)) reject('Not a valid session.');
         resolve(normalize.session(res));
-      },
-
-      function (e) {
-        reject('Session ID is invalid.');
+      }).catch(function (e) {
+        reject(new Error('Session ID is invalid'));
       });
     }
 
     if (term) getSessionInfo(term);
-    else TROJAN.current_term().then(getSessionInfo, reject);
+    else TROJAN.current_term().then(getSessionInfo).catch(reject);
   });
 };
 
 TROJAN.booklist = function (section, term) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     function getBookList(term) {
       urlparse('/booklist/' + section + '/' + term).then(function returnBooklist(res) {
         resolve(normalize.booklist(res));
-      },
-
-      function (e) {
+      }).catch(function (e) {
         reject('No booklist found.');
       });
     }
 
     if (term) getBookList(term);
-    else TROJAN.current_term().then(getBookList, reject);
+    else TROJAN.current_term().then(getBookList).catch(reject);
   });
 };
 
 TROJAN.courses = function (dept, term) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     if (_.isObject(dept)) returnCourses(dept);
-    else TROJAN.dept(dept, term).then(returnCourses);
+    else TROJAN.dept(dept, term).then(returnCourses).catch(reject);
 
     function returnCourses(data) {
       resolve(data.courses);
@@ -100,9 +96,9 @@ TROJAN.courses = function (dept, term) {
 };
 
 TROJAN.dept_info = function (dept, term) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     if (_.isObject(dept)) returnDeptInfo(dept);
-    else TROJAN.dept(dept, term).then(returnDeptInfo);
+    else TROJAN.dept(dept, term).then(returnDeptInfo).catch(reject);
 
     function returnDeptInfo(data) {
       resolve(data.meta);
@@ -117,9 +113,9 @@ TROJAN.course = function (dept, num, seq, term) {
   num = Math.round(num);
   if (_.isString(seq)) seq = _.upperCase(seq); // insurance
 
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     if (_.isObject(dept)) returnCourse(dept);
-    else TROJAN.courses(dept, term).then(returnCourse);
+    else TROJAN.courses(dept, term).then(returnCourse).catch(reject);
 
     function returnCourse(data) {
       var object = {};
@@ -148,9 +144,9 @@ TROJAN.course = function (dept, num, seq, term) {
 };
 
 TROJAN.section = function (dept, num, seq, sect, term) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     if (_.isObject(dept)) returnSection(dept);
-    else TROJAN.course(dept, num, seq, term).then(returnSection);
+    else TROJAN.course(dept, num, seq, term).then(returnSection).catch(reject);
 
     function returnSection(data) {
       _.forEach(data, function (val, key) {
@@ -167,9 +163,9 @@ TROJAN.section = function (dept, num, seq, sect, term) {
 /* ————— TRANSFORMED FUNCTIONS ————— */
 
 TROJAN.depts_flat = function (term) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     if (_.isObject(term)) returnDeptsFlat(term);
-    else TROJAN.depts(term).then(returnDeptsFlat);
+    else TROJAN.depts(term).then(returnDeptsFlat).catch(reject);
 
     function returnDeptsFlat(res) {
       var object = {};
@@ -194,7 +190,7 @@ TROJAN.depts_flat = function (term) {
 };
 
 TROJAN.deptsY = function (term) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     TROJAN.depts_flat(term).then(function (res) {
       var object = {};
       _.forEach(res, function (val, key) {
@@ -203,12 +199,12 @@ TROJAN.deptsY = function (term) {
       });
 
       resolve(object);
-    });
+    }).catch(reject);
   });
 };
 
 TROJAN.deptsC = function (term) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     TROJAN.depts_flat(term).then(function (res) {
       var object = {};
       _.forEach(res, function (val, key) {
@@ -217,12 +213,12 @@ TROJAN.deptsC = function (term) {
       });
 
       resolve(object);
-    });
+    }).catch(reject);
   });
 };
 
 TROJAN.deptsN = function (term) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     TROJAN.depts_flat(term).then(function (res) {
       var object = {};
       _.forEach(res, function (val, key) {
@@ -231,12 +227,12 @@ TROJAN.deptsN = function (term) {
       });
 
       resolve(object);
-    });
+    }).catch(reject);
   });
 };
 
 TROJAN.deptsCN = function (term) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     TROJAN.depts_flat(term).then(function (res) {
       var object = {};
       _.forEach(res, function (val, key) {
@@ -245,21 +241,24 @@ TROJAN.deptsCN = function (term) {
       });
 
       resolve(object);
-    });
+    }).catch(reject);
   });
 };
 
-TROJAN.deptBatch_cb = function (depts, term, cb) {
+TROJAN.deptBatch_cb = function (depts, term, cb, reject) {
+  reject = reject || function (e) { console.error(e.stack) }
   function getClasses(term) {
     _.forEach(depts, function (dept) {
       TROJAN.dept(dept, term).then(function (data) {
         cb(data);
-      });
+      }).catch(reject);
     });
   }
 
   if (term) getClasses(term);
-  else TROJAN.current_term().then(getClasses);
+  else {
+    TROJAN.current_term().then(getClasses).catch(reject);
+  }
 };
 
 TROJAN.deptBatch = function (depts, term) {
@@ -270,7 +269,7 @@ TROJAN.deptBatch = function (depts, term) {
       if (Object.keys(object).length == depts.length) {
         resolve(object);
       }
-    });
+    }, reject);
   });
 };
 
@@ -281,7 +280,7 @@ TROJAN.combinations_async = function (coursedata) {
 };
 
 TROJAN.combinations = function (coursedata) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     resolve(TROJAN.combinations_async(coursedata));
   });
 };
