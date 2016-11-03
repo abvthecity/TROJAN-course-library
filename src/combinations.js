@@ -82,11 +82,16 @@ combinations.buckets = function (sections) {
   for (var i in sectionOrder) {
 
     // check if we should be creating new buckets
-    if (!_.isEmpty(bucket) && (
-        orderIsImportant
+    if (!_.isEmpty(bucket)
+      && orderIsImportant
       && typeOrder[i] == typeOrder[0] // every round
-      || typeOrder[i].indexOf('-') > -1 // lec-lab / lec-dis appearances
-    )) {
+    ) {
+      buckets.push(bucket);
+      bucket = {};
+    }
+
+    if (!_.isEmpty(bucket)
+      && typeOrder[i].indexOf('-') > -1) { // lec-lab / lec-dis appearances)
       buckets.push(bucket);
       bucket = {};
     }
@@ -108,6 +113,13 @@ combinations.buckets = function (sections) {
     // the main function: push to bucket.
     bucket[typeOrder[i]] = bucket[typeOrder[i]] || [];
     bucket[typeOrder[i]].push(sectionOrder[i]);
+    // console.log(bucket);
+
+    if (!_.isEmpty(bucket)
+      && typeOrder[i].indexOf('-') > -1) { // lec-lab / lec-dis appearances)
+      buckets.push(bucket);
+      bucket = {};
+    }
   }
 
   // reconciliation:
