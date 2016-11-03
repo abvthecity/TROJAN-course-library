@@ -10,7 +10,7 @@ var TROJAN = {};
 /* ————— STANDARD FUNCTIONS ————— */
 
 TROJAN.terms = function () {
-  return new Promise(function (resolve) {
+  return new Promise(function (resolve, reject) {
     urlparse('/terms').then(function returnTerms(res) {
       resolve(res.term.map(function (term) {
         return parseInt(term);
@@ -20,7 +20,7 @@ TROJAN.terms = function () {
 };
 
 TROJAN.current_term = function () {
-  return new Promise(function (resolve) {
+  return new Promise(function (resolve, reject) {
     TROJAN.terms().then(function returnCurrentTerm(res) {
       resolve(res[res.length - 1]);
     }).catch(reject);
@@ -28,7 +28,7 @@ TROJAN.current_term = function () {
 };
 
 TROJAN.depts = function (term) {
-  return new Promise(function (resolve) {
+  return new Promise(function (resolve, reject) {
     function getDepts(term) {
       urlparse('/depts/' + term).then(function returnDeptsObject(res) {
         resolve(normalize.depts(res.department));
@@ -41,7 +41,7 @@ TROJAN.depts = function (term) {
 };
 
 TROJAN.dept = function (dept, term) {
-  return new Promise(function (resolve) {
+  return new Promise(function (resolve, reject) {
     function getClasses(term) {
       urlparse('/classes/' + dept + '/' + term).then(function returnDept(res) {
         resolve(normalize.classes(res));
@@ -54,7 +54,7 @@ TROJAN.dept = function (dept, term) {
 };
 
 TROJAN.session = function (session, term) {
-  return new Promise(function (resolve) {
+  return new Promise(function (resolve, reject) {
     function getSessionInfo(term) {
       urlparse('/session/' + session + '/' + term).then(function returnSess(res) {
         if (_.isEmpty(res)) reject('Not a valid session.');
@@ -70,7 +70,7 @@ TROJAN.session = function (session, term) {
 };
 
 TROJAN.booklist = function (section, term) {
-  return new Promise(function (resolve) {
+  return new Promise(function (resolve, reject) {
     function getBookList(term) {
       urlparse('/booklist/' + section + '/' + term).then(function returnBooklist(res) {
         resolve(normalize.booklist(res));
@@ -85,7 +85,7 @@ TROJAN.booklist = function (section, term) {
 };
 
 TROJAN.courses = function (dept, term) {
-  return new Promise(function (resolve) {
+  return new Promise(function (resolve, reject) {
     if (_.isObject(dept)) returnCourses(dept);
     else TROJAN.dept(dept, term).then(returnCourses).catch(reject);
 
@@ -96,7 +96,7 @@ TROJAN.courses = function (dept, term) {
 };
 
 TROJAN.dept_info = function (dept, term) {
-  return new Promise(function (resolve) {
+  return new Promise(function (resolve, reject) {
     if (_.isObject(dept)) returnDeptInfo(dept);
     else TROJAN.dept(dept, term).then(returnDeptInfo).catch(reject);
 
@@ -113,7 +113,7 @@ TROJAN.course = function (dept, num, seq, term) {
   num = Math.round(num);
   if (_.isString(seq)) seq = _.upperCase(seq); // insurance
 
-  return new Promise(function (resolve) {
+  return new Promise(function (resolve, reject) {
     if (_.isObject(dept)) returnCourse(dept);
     else TROJAN.courses(dept, term).then(returnCourse).catch(reject);
 
@@ -144,7 +144,7 @@ TROJAN.course = function (dept, num, seq, term) {
 };
 
 TROJAN.section = function (dept, num, seq, sect, term) {
-  return new Promise(function (resolve) {
+  return new Promise(function (resolve, reject) {
     if (_.isObject(dept)) returnSection(dept);
     else TROJAN.course(dept, num, seq, term).then(returnSection).catch(reject);
 
@@ -163,7 +163,7 @@ TROJAN.section = function (dept, num, seq, sect, term) {
 /* ————— TRANSFORMED FUNCTIONS ————— */
 
 TROJAN.depts_flat = function (term) {
-  return new Promise(function (resolve) {
+  return new Promise(function (resolve, reject) {
     if (_.isObject(term)) returnDeptsFlat(term);
     else TROJAN.depts(term).then(returnDeptsFlat).catch(reject);
 
@@ -190,7 +190,7 @@ TROJAN.depts_flat = function (term) {
 };
 
 TROJAN.deptsY = function (term) {
-  return new Promise(function (resolve) {
+  return new Promise(function (resolve, reject) {
     TROJAN.depts_flat(term).then(function (res) {
       var object = {};
       _.forEach(res, function (val, key) {
@@ -204,7 +204,7 @@ TROJAN.deptsY = function (term) {
 };
 
 TROJAN.deptsC = function (term) {
-  return new Promise(function (resolve) {
+  return new Promise(function (resolve, reject) {
     TROJAN.depts_flat(term).then(function (res) {
       var object = {};
       _.forEach(res, function (val, key) {
@@ -218,7 +218,7 @@ TROJAN.deptsC = function (term) {
 };
 
 TROJAN.deptsN = function (term) {
-  return new Promise(function (resolve) {
+  return new Promise(function (resolve, reject) {
     TROJAN.depts_flat(term).then(function (res) {
       var object = {};
       _.forEach(res, function (val, key) {
@@ -232,7 +232,7 @@ TROJAN.deptsN = function (term) {
 };
 
 TROJAN.deptsCN = function (term) {
-  return new Promise(function (resolve) {
+  return new Promise(function (resolve, reject) {
     TROJAN.depts_flat(term).then(function (res) {
       var object = {};
       _.forEach(res, function (val, key) {
