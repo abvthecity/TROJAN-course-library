@@ -132,7 +132,7 @@ TROJAN.dept_info('CSCI').then(console.log);
   TermNotes: null }
 ```
 
-### course(dept, num, seq, options)
+### course(courseId, options)
 ```javascript
 TROJAN.course('CTAN', '450').then(console.log);
 ```
@@ -171,7 +171,7 @@ TROJAN.course('CTAN', '450').then(console.log);
     sections: { '17880': [Object] } } }
 ```
 
-### section(dept, num, seq, sect, options)
+### section(courseId, sectionId, options)
 ```javascript
 TROJAN.section('CTAN', 450, 'A', 17874).then(console.log);
 ```
