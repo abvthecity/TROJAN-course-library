@@ -1,4 +1,4 @@
-# TROJAN Course API v2.1
+# TROJAN Course API v2.2
 
 TROJAN Course API is fast, asyncronous, unofficial course catalogue API that can be used to develop course tools for USC with javascript. In version 2, I've re-wrote every method from scratch. Here's why:
 
@@ -6,13 +6,18 @@ TROJAN Course API is fast, asyncronous, unofficial course catalogue API that can
 2. Now using Promises instead of Async. The previous implementation was too messy to interface with.
 3. AJAX throttling. I've wrote the requests to USC's server to be fail-proof. Meaning, as soon as we get an error from the server, it will try again.
 
-## Changes from v2 to v2.1
+## Changes from v2 to v2.2
 
+* Every function is re-written to utilize better syntax practices with Promises
 * AJAX requests made through this API are now executed via a queue, to reduce errors returned by the server
-* the term parameter is being replaced with an "options" parameter, which is an object that includes term as a member variable
+* The term parameter is being replaced with an "options" parameter, which is an object that includes term as a member variable
 * It is now possible to force the server to refresh its cache when you add a refresh=true flag in the options of each method
 * Substring searches are now executed via RegEx
 * Instead of specifying the (dept, num, seq) separately, you can now just specify a courseId and RegEx will resolve these variables
+* Return objects are updated to include metadata about the object.
+
+## Warning: Below is the documentation for v2
+v2.2 has updated return objects. Please test the API return elements before using them.
 
 ## Basic usage
 ```javascript

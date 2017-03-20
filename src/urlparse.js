@@ -22,7 +22,7 @@ function createParameters(url, resolve, reject, count) {
 				if (count < numberOfFailsAllowed) {
 					addToQueue(url, resolve, reject, count+1);
 				} else {
-					reject(count);
+					reject(error);
 				}
 			} else {
 				inProgress = false;
@@ -58,7 +58,7 @@ function addToQueue(url, resolve, reject, count) {
 // thenable response
 module.exports = function (url, cached) {
 	cached = cached || false;
-	var refresh = '?request=Mary4adAL1ttleLamp';
+	var refresh = '?refresh=Mary4adAL1ttleLamp';
 	var urlBase = 'http://web-app.usc.edu/web/soc/api';
 	url = urlBase + url;
 	if (cached) url += refresh;

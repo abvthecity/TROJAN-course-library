@@ -35,283 +35,379 @@ var TROJAN = {};
 /* ————— STANDARD FUNCTIONS ————— */
 
 TROJAN.terms = function () {
-  return new Promise(function (resolve, reject) {
-    urlparse('/terms').then(function returnTerms(res) {
-      resolve(res.term.map(function (term) {
-        return parseInt(term);
-      }));
-    }).catch(reject);
+  return urlparse('/terms').then(function (termsResponse) {
+	  return new Promise(function (resolve, reject) {
+      resolve({
+				type: 'active_terms_object',
+				ts: Date.now(),
+				command: 'terms',
+				terms: termsResponse.term.map(function (term) {
+	        return parseInt(term);
+	      })
+			});
+    });
   });
 };
 
 TROJAN.current_term = function () {
-  return new Promise(function (resolve, reject) {
-    TROJAN.terms().then(function returnCurrentTerm(res) {
-      resolve(res[res.length - 1]);
-    }).catch(reject);
+  return TROJAN.terms().then(function (activeTermsObject) {
+	  return new Promise(function (resolve, reject) {
+			var terms = activeTermsObject.terms;
+			var currentTerm = terms[terms.length - 1]
+      resolve({
+				type: 'single_term_object',
+				ts: Date.now(),
+				command: 'current_term',
+				term: currentTerm
+			});
+    });
   });
 };
 
 TROJAN.depts = function (options) {
 	options = options || {};
-	var term = options.term, refresh = options.refresh;
+	if ('term' in options) {
+		return getDepts({
+			type: 'single_term_object',
+			term: options['term']
+		});
+	} else {
+		return TROJAN.current_term().then(getDepts);
+	}
 
-  return new Promise(function (resolve, reject) {
-    function getDepts(term) {
-      urlparse('/depts/' + term, refresh).then(function returnDeptsObject(res) {
-        resolve(normalize.depts(res.department));
-      }).catch(reject);
-    }
-
-    if (term) getDepts(term);
-    else TROJAN.current_term().then(getDepts).catch(reject);
-  });
+  function getDepts(singleTermObject) {
+		var term = singleTermObject.term;
+    return urlparse('/depts/' + term, options.refresh)
+			.then(function returnDeptsObject(res) {
+				return new Promise(function (resolve, reject) {
+		      resolve({
+						type: 'departments_list_object',
+						ts: Date.now(),
+						command: 'depts',
+						departments: normalize.depts(res.department)
+					});
+		    });
+			});
+  }
 };
 
 TROJAN.dept = function (dept, options) {
 	options = options || {};
 	var term = options.term, refresh = options.refresh;
 
-  return new Promise(function (resolve, reject) {
-    function getClasses(term) {
-      urlparse('/classes/' + dept + '/' + term, refresh).then(function returnDept(res) {
-        resolve(normalize.classes(res));
-      }).catch(reject);
-    }
+  if (term) {
+		return getClasses({
+			type: 'single_term_object',
+			term: term
+		});
+	} else {
+		return TROJAN.current_term().then(getClasses);
+	}
 
-    if (term) getClasses(term);
-    else TROJAN.current_term().then(getClasses).catch(reject);
-  });
+	function getClasses(singleTermObject) {
+		var term = singleTermObject.term;
+    return urlparse('/classes/' + dept + '/' + term, refresh)
+			.then(function returnDept(res) {
+				return new Promise(function (resolve, reject) {
+	        resolve({
+						type: 'department_object',
+						ts: Date.now(),
+						command: 'dept',
+						department: normalize.classes(res)
+					});
+				});
+      });
+  }
 };
 
 TROJAN.session = function (session, options) {
 	options = options || {};
 	var term = options.term, refresh = options.refresh;
 
-  return new Promise(function (resolve, reject) {
-    function getSessionInfo(term) {
-      urlparse('/session/' + session + '/' + term, refresh).then(function returnSess(res) {
-        if (_.isEmpty(res)) reject('Not a valid session.');
-        resolve(normalize.session(res));
-      }).catch(function (e) {
-        reject(new Error('Session ID is invalid'));
-      });
-    }
+	if (term) {
+		return getSessionInfo({
+			type: 'single_term_object',
+			term: term
+		});
+	} else {
+		return TROJAN.current_term().then(getSessionInfo);
+	}
 
-    if (term) getSessionInfo(term);
-    else TROJAN.current_term().then(getSessionInfo).catch(reject);
-  });
+  function getSessionInfo(singleTermObject) {
+		var term = singleTermObject.term;
+    return urlparse('/session/' + session + '/' + term, refresh)
+			.then(function returnSess(res) {
+		  return new Promise(function (resolve, reject) {
+	      if (_.isEmpty(res)) reject('Not a valid session.');
+	      resolve({
+					type: 'session_object',
+					ts: Date.now(),
+					command: 'session',
+					session: normalize.session(res)
+				});
+	    });
+	  });
+  }
 };
 
 TROJAN.booklist = function (section, options) {
 	options = options || {};
 	var term = options.term, refresh = options.refresh;
 
-  return new Promise(function (resolve, reject) {
-    function getBookList(term) {
-      urlparse('/booklist/' + section + '/' + term, refresh).then(function returnBooklist(res) {
-        resolve(normalize.booklist(res));
-      }).catch(function (e) {
-        reject('No booklist found.');
-      });
-    }
+	if (term) {
+		return getBookList({
+			type: 'single_term_object',
+			term: term
+		});
+	} else {
+		return TROJAN.current_term().then(getBookList);
+	}
 
-    if (term) getBookList(term);
-    else TROJAN.current_term().then(getBookList).catch(reject);
-  });
+  function getBookList(singleTermObject) {
+		var term = singleTermObject.term;
+    return urlparse('/booklist/' + section + '/' + term, refresh)
+			.then(function returnBooklist(res) {
+		  return new Promise(function (resolve, reject) {
+        resolve({
+					type: 'booklist_object',
+					ts: Date.now(),
+					command: 'booklist',
+					booklist: normalize.booklist(res)
+				});
+		  });
+    });
+  }
 };
 
 TROJAN.courses = function (dept, options) {
-	options = options || {};
+	if (_.isObject(dept)) return returnCourses(dept);
+	else return TROJAN.dept(dept, options).then(returnCourses);
 
-  return new Promise(function (resolve, reject) {
-    if (_.isObject(dept)) returnCourses(dept);
-    else TROJAN.dept(dept, options).then(returnCourses).catch(reject);
-
-    function returnCourses(data) {
-      resolve(data.courses);
-    }
-  });
+  function returnCourses(departmentObject) {
+	  return new Promise(function (resolve, reject) {
+      resolve ({
+				type: 'courses_object',
+				ts: Date.now(),
+				command: 'courses',
+				courses: departmentObject.department.courses
+			});
+	  });
+	}
 };
 
 TROJAN.dept_info = function (dept, options) {
-	options = options || {};
-
   return new Promise(function (resolve, reject) {
     if (_.isObject(dept)) returnDeptInfo(dept);
     else TROJAN.dept(dept, options).then(returnDeptInfo).catch(reject);
 
-    function returnDeptInfo(data) {
-      resolve(data.meta);
+    function returnDeptInfo(departmentObject) {
+      resolve({
+				type: 'department_meta_object',
+				ts: Date.now(),
+				command: 'dept_info',
+				meta: departmentObject.department.meta
+			});
     }
   });
 };
 
 /* ————— QUERYING ————— */
 
-TROJAN.course = function (courseId, options) {
-	options = options || {};
+TROJAN.course = function (courseIdObject, options) {
+	if (_.isString(courseIdObject)) courseIdObject = TROJAN.parseCourseId(courseIdObject);
 
-	courseId = TROJAN.parseCourseId(courseId);
-	console.log(courseId);
+	if (courseIdObject['type'] == 'courses_object') {
+		return returnCourse(courseIdObject);
+	} else if (courseIdObject['type'] == 'course_id_object'){
+		return TROJAN.courses(courseIdObject.dept, options).then(returnCourse);
+	}
 
-	var dept = courseId.dept, num = courseId.num, seq = courseId.seq;
+  function returnCourse(coursesObject) {
+		var dept = courseIdObject.dept,
+				num = courseIdObject.num,
+				seq = courseIdObject.seq,
+				courseId = courseIdObject.courseId;
+	  return new Promise(function (resolve, reject) {
+      var toResolve = {};
 
-  return new Promise(function (resolve, reject) {
-    if (!('dept' in courseId)) returnCourse(courseId);
-    else TROJAN.courses(dept, options).then(returnCourse).catch(reject);
-
-    function returnCourse(data) {
-      var object = {};
-
-      var seq2 = (seq == null) ? '' : seq;
-      if (!_.isUndefined(data[dept + '-' + num + seq2])) {
-        object[dept + '-' + num + seq2] = data[dept + '-' + num + seq2];
+      var seq = seq || '';
+      if (!_.isUndefined(coursesObject[courseId])) {
+        toResolve[courseId] = coursesObject[courseId];
       } else {
         // for each matching query, append to object
-        _.forEach(data, function (val, key) {
+        _.forEach(coursesObject.courses, function (val, key) {
           if (val.number == num) {
             if (seq) {
               if (val.sequence == seq) {
-                object[key] = val;
+                toResolve[key] = val;
               }
             } else {
-              object[key] = val;
+              toResolve[key] = val;
             }
           }
         });
       }
 
-      resolve(object);
-    }
-  });
+      resolve({
+				type: 'courses_object',
+				ts: Date.now(),
+				command: 'course',
+				courses: toResolve
+			});
+	  });
+  }
 };
 
-TROJAN.section = function (courseId, sect, options) {
-	options = options || {};
+TROJAN.section = function (courseIdObject, sectionId, options) {
+	if (_.isString(courseIdObject)) courseIdObject = TROJAN.parseCourseId(courseIdObject);
 
-	courseId = TROJAN.parseCourseId(courseId);
-	var dept = courseId.dept, num = courseId.num, seq = courseId.seq;
+	if (courseIdObject['type'] == 'courses_object') {
+		return returnSection(courseIdObject);
+	} else if (courseIdObject['type'] == 'course_id_object'){
+		return TROJAN.course(courseIdObject, options).then(returnSection);
+	}
 
-  return new Promise(function (resolve, reject) {
-    if (!('dept' in courseId)) returnSection(courseId);
-    else TROJAN.course(courseId, options).then(returnSection).catch(reject);
-
-    function returnSection(data) {
-      _.forEach(data, function (val, key) {
+  function returnSection(coursesObject) {
+		var courses = coursesObject.courses;
+		return new Promise(function (resolve, reject) {
+      _.forEach(courses, function (val, key) {
         if (val.sections) {
           _.forEach(val.sections, function (sval, skey) {
-            if (skey == sect) resolve(sval);
+            if (skey == sectionId) {
+							resolve({
+								type: 'section_object',
+								ts: Date.now(),
+								command: 'section',
+								section: sval
+							});
+						}
           });
         }
       });
-    }
-  });
+	  });
+	}
 };
 
 /* ————— TRANSFORMED FUNCTIONS ————— */
 
 TROJAN.depts_flat = function (options) {
-	options = options || {};
+  return TROJAN.depts(options).then(function (departmentsObject) {
+		var departments = departmentsObject.departments;
+		return new Promise(function (resolve, reject) {
+			var toResolve = {};
 
-  return new Promise(function (resolve, reject) {
-    if (_.isObject(term)) returnDeptsFlat(term);
-    else TROJAN.depts(options).then(returnDeptsFlat).catch(reject);
+			function findDeptNRecurse(departments) {
+				_.forEach(departments, function (val, key) {
+					toResolve[key] = {
+						name: val.name,
+						type: val.type,
+					};
 
-    function returnDeptsFlat(res) {
-      var object = {};
+					if (val.depts) {
+						findDeptNRecurse(val.depts);
+					}
+				});
+			}
 
-      function findDeptNRecurse(res) {
-        _.forEach(res, function (val, key) {
-          object[key] = {
-            name: val.name,
-            type: val.type,
-          };
-
-          if (val.depts) {
-            findDeptNRecurse(val.depts);
-          }
-        });
-      }
-
-      findDeptNRecurse(res);
-      resolve(object);
-    }
-  });
+			findDeptNRecurse(departments);
+			resolve({
+				type: 'departments_list_object',
+				ts: Date.now(),
+				command: 'depts_flat',
+				departments: toResolve
+			});
+		});
+	});
 };
 
 TROJAN.deptsY = function (options) {
-	options = options || {};
+    return TROJAN.depts_flat(options).then(function (departmentsObject) {
+		  return new Promise(function (resolve, reject) {
+	      var toResolve = {};
+				var departments = departmentsObject.departments;
+	      _.forEach(departments, function (val, key) {
+	        if (val.type == 'Y')
+	        toResolve[key] = val.name;
+	      });
 
-  return new Promise(function (resolve, reject) {
-    TROJAN.depts_flat(options).then(function (res) {
-      var object = {};
-      _.forEach(res, function (val, key) {
-        if (val.type == 'Y')
-        object[key] = val.name;
-      });
-
-      resolve(object);
-    }).catch(reject);
-  });
+	      resolve({
+					type: 'departments_list_object',
+					ts: Date.now(),
+					command: 'deptsY',
+					departments: toResolve
+				});
+		  });
+    });
 };
 
 TROJAN.deptsC = function (options) {
-	options = options || {};
-
-  return new Promise(function (resolve, reject) {
-    TROJAN.depts_flat(options).then(function (res) {
-      var object = {};
-      _.forEach(res, function (val, key) {
+	return TROJAN.depts_flat(options).then(function (departmentsObject) {
+	  return new Promise(function (resolve, reject) {
+      var toResolve = {};
+			var departments = departmentsObject.departments;
+      _.forEach(departments, function (val, key) {
         if (val.type == 'C')
-        object[key] = val.name;
+        toResolve[key] = val.name;
       });
 
-      resolve(object);
-    }).catch(reject);
+			resolve({
+				type: 'departments_list_object',
+				ts: Date.now(),
+				command: 'deptsY',
+				departments: toResolve
+			});
+    });
   });
 };
 
 TROJAN.deptsN = function (options) {
-	options = options || {};
-
-  return new Promise(function (resolve, reject) {
-    TROJAN.depts_flat(options).then(function (res) {
-      var object = {};
-      _.forEach(res, function (val, key) {
+	return TROJAN.depts_flat(options).then(function (departmentsObject) {
+	  return new Promise(function (resolve, reject) {
+      var toResolve = {};
+			var departments = departmentsObject.departments;
+      _.forEach(departments, function (val, key) {
         if (val.type == 'N')
-        object[key] = val.name;
+        toResolve[key] = val.name;
       });
 
-      resolve(object);
-    }).catch(reject);
+			resolve({
+				type: 'departments_list_object',
+				ts: Date.now(),
+				command: 'deptsY',
+				departments: toResolve
+			});
+    });
   });
 };
 
 TROJAN.deptsCN = function (options) {
-	options = options || {};
-
-  return new Promise(function (resolve, reject) {
-    TROJAN.depts_flat(options).then(function (res) {
-      var object = {};
-      _.forEach(res, function (val, key) {
+	return TROJAN.depts_flat(options).then(function (departmentsObject) {
+	  return new Promise(function (resolve, reject) {
+      var toResolve = {};
+			var departments = departmentsObject.departments;
+      _.forEach(departments, function (val, key) {
         if (val.type == 'C' || val.type == 'N')
-        object[key] = val.name;
+        toResolve[key] = val.name;
       });
 
-      resolve(object);
-    }).catch(reject);
+			resolve({
+				type: 'departments_list_object',
+				ts: Date.now(),
+				command: 'deptsY',
+				departments: toResolve
+			});
+    });
   });
 };
 
-TROJAN.deptBatch_cb = function (depts, options, cb, reject) {
+TROJAN.deptBatch_cb = function (depts, options, resolve, reject) {
 	options = options || {};
 
   reject = reject || function (e) { console.error(e.stack) }
   function getClasses(term) {
     _.forEach(depts, function (dept) {
       TROJAN.dept(dept, options).then(function (data) {
-        cb(data);
+        resolve(data);
       }).catch(reject);
     });
   }
@@ -323,8 +419,6 @@ TROJAN.deptBatch_cb = function (depts, options, cb, reject) {
 };
 
 TROJAN.deptBatch = function (depts, options) {
-	options = options || {};
-
   return new Promise(function (resolve, reject) {
     var object = {};
     TROJAN.deptBatch_cb(depts, options, function (data) {
@@ -348,12 +442,19 @@ TROJAN.combinations_async = function (coursedata) {
   return object;
 };
 
-TROJAN.parseCourseId = function (courseId) {
-	if (_.isObject(courseId)) return courseId;
+TROJAN.parseCourseId = function (courseIdString) {
+	if (_.isObject(courseIdString)) return courseIdString;
+	var dept = getDept(courseIdString);
+	var num = getNum(courseIdString);
+	var seq = getSeq(courseIdString);
 	return {
-		dept: getDept(courseId),
-		num: getNum(courseId),
-		seq: getSeq(courseId)
+		type: 'course_id_object',
+		ts: Date.now(),
+		command: 'parseCourseId',
+		dept: dept,
+		num: num,
+		seq: seq,
+		course_id: dept + '-' + num + (seq || '')
 	};
 }
 
