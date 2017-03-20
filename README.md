@@ -1,10 +1,18 @@
-# TROJAN Course API v2
+# TROJAN Course API v2.1
 
 TROJAN Course API is fast, asyncronous, unofficial course catalogue API that can be used to develop course tools for USC with javascript. In version 2, I've re-wrote every method from scratch. Here's why:
 
 1. Data coming from the official API is not normalized. Some values disappear, other values would change from string to object. All data in this API has been transformed and normalized so you don't have to worry.
 2. Now using Promises instead of Async. The previous implementation was too messy to interface with.
 3. AJAX throttling. I've wrote the requests to USC's server to be fail-proof. Meaning, as soon as we get an error from the server, it will try again.
+
+## Changes from v2 to v2.1
+
+* AJAX requests made through this API are now executed via a queue, to reduce errors returned by the server
+* the term parameter is being replaced with an "options" parameter, which is an object that includes term as a member variable
+* It is now possible to force the server to refresh its cache when you add a refresh=true flag in the options of each method
+* Substring searches are now executed via RegEx
+* Instead of specifying the (dept, num, seq) separately, you can now just specify a courseId and RegEx will resolve these variables
 
 ## Basic usage
 ```javascript
@@ -16,21 +24,21 @@ TROJAN Course API is fast, asyncronous, unofficial course catalogue API that can
 * standard
   * terms()
   * current_term()
-  * depts(term)
-  * dept(dept, term)
-  * courses(dept, term)
-  * dept_info(dept, term)
+  * depts(options)
+  * dept(dept, options)
+  * courses(dept, options)
+  * dept_info(dept, options)
 * querying
-  * course(dept, num, seq, term)
-  * section(dept, num, seq, sect, term)
+  * course(courseId, options)
+  * section(courseId, sect, options)
 * transforming
-  * depts_flat(term)
-  * deptsY(term)
-  * deptsC(term)
-  * deptsN(term)
-  * deptsCN(term)
-  * deptBatch_cb(array_of_depts, term, callback)
-  * deptBatch(array_of_depts, term)
+  * depts_flat(options)
+  * deptsY(options)
+  * deptsC(options)
+  * deptsN(options)
+  * deptsCN(options)
+  * deptBatch_cb(array_of_depts, options, callback, reject)
+  * deptBatch(array_of_depts, options)
   * combinations(sections);
 
 *NOTE: including `term` as a parameter is always optional. If you leave it out, the current-most term will be used. However, that means performing more server GET requests, so it's gonna be slightly slower.*
@@ -51,7 +59,7 @@ TROJAN.current_term().then(console.log);
 20163
 ```
 
-### depts(term)
+### depts(options)
 Gets you an object of all the departments. There are two levels apparently of departments nested within departments (usually school code).
 ```javascript
 TROJAN.depts().then(console.log);
@@ -67,7 +75,7 @@ TROJAN.depts().then(console.log);
   ... }
 ```
 
-### dept(dept, term)
+### dept(dept, options)
 Get a snapshot of the department, its info, and its courses
 ```javascript
 TROJAN.dept('CSCI').then(console.log);
@@ -80,8 +88,8 @@ TROJAN.dept('CSCI').then(console.log);
 }
 ```
 
-### courses(dept, term)
-You can also get here by `dept(dept, term)` -> `.courses`.
+### courses(dept, options)
+You can also get here by `dept(dept, options)` -> `.courses`.
 ```javascript
 TROJAN.courses('CSCI').then(console.log);
 ```
@@ -106,8 +114,8 @@ TROJAN.courses('CSCI').then(console.log);
   ... }
 ```
 
-### dept_info(dept, term)
-You can also get here by `dept(dept, term)` -> `.meta`.
+### dept_info(dept, options)
+You can also get here by `dept(dept, options)` -> `.meta`.
 ```javascript
 TROJAN.dept_info('CSCI').then(console.log);
 ```
@@ -124,7 +132,7 @@ TROJAN.dept_info('CSCI').then(console.log);
   TermNotes: null }
 ```
 
-### course(dept, num, seq, term)
+### course(dept, num, seq, options)
 ```javascript
 TROJAN.course('CTAN', '450').then(console.log);
 ```
@@ -163,7 +171,7 @@ TROJAN.course('CTAN', '450').then(console.log);
     sections: { '17880': [Object] } } }
 ```
 
-### section(dept, num, seq, sect, term)
+### section(dept, num, seq, sect, options)
 ```javascript
 TROJAN.section('CTAN', 450, 'A', 17874).then(console.log);
 ```
@@ -192,20 +200,31 @@ TROJAN.section('CTAN', 450, 'A', 17874).then(console.log);
   IsDistanceLearning: false }
 ```
 
-### depts_flat(term)
-Recursively flattens the object of departments from `dept(term)`.
+### depts_flat(options)
+Recursively flattens the object of departments from `dept(options)`.
 
-### deptsY(term)
+### deptsY(options)
 Outputs an object of departments of type Y.
 
-### deptsC(term)
+### deptsC(options)
 Outputs an object of departments of type C.
 
-### deptsN(term)
+### deptsN(options)
 Outputs an object of departments of type N.
 
 ### deptBatch(array_of_depts)
-Given an input of, for example, `['CSCI', 'EE', 'BISC']`, you will get all the `dept(dept, term)` for each in a single object.
+Given an input of, for example, `['CSCI', 'EE', 'BISC']`, you will get all the `dept(dept, options)` for each in a single object.
+
+### parseCourseId(courseId)
+Given 'CTAN-450A' or 'CTAN 450A' or 'CTAN450A', outputs:
+```javascript
+{
+	dept: 'CTAN',
+	term: 450,
+	seq: 'A'
+}
+```
+If matches for each part are not found, they become null.
 
 ### combinations(coursedata)
 Given an input of an object of a course (which is usually returned by course()), this will give an output array of all the possible section combinations of the course. For example, inputting the course data for `ISE-570` will return:
@@ -244,10 +263,3 @@ Given an input of an object of a course (which is usually returned by course()),
   [ 30102, 30399, 29923 ],
   [ 30099, 30152, 30253 ] ]
 ```
-You're welcome.
-
-## Conclusion
-
-Thanks for taking a look at this API. Please use it responsibly!
-
-Authored by Andrew Jiang.

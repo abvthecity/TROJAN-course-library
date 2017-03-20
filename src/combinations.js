@@ -3,6 +3,8 @@ var sectionConflictExists = require('./sectionConflictExists');
 
 var combinations = {};
 
+var immediatelyRegEx = new RegExp('immediately', 'i');
+
 combinations.generate = function (sections) {
   var buckets = combinations.buckets(sections);
 
@@ -150,7 +152,8 @@ combinations.orderIsImportant = function (sections, sectionOrder, typeOrder) {
 
   for (var key in sectionOrder) {
     var desc = sections[sectionOrder[key]].description;
-    if (desc != null && desc.indexOf('ster') > -1 && desc.indexOf('mmed') > -1) {
+    if (desc != null && immediatelyRegEx.test(desc)) {
+			console.log("omg");
       // to omit those weird ones...
       if (typeOrder[0] != typeOrder[1]) {
         return true;

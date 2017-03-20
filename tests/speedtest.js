@@ -15,7 +15,7 @@ var combinations = require('../src/combinations');
 var _ = require('lodash');
 
 var oldTime = Date.now();
-var term = 20171;
+var term = 20173;
 
 // get full list of departments with courses
 TROJAN.deptsCN(term).then(function (dlist) {
