@@ -31,7 +31,7 @@ function createParameters(url, resolve, reject, count) {
 					var data = JSON.parse(body);
 					resolve(data);
 				} catch(e) {
-				 	reject(e.message);
+				 	reject(e);
 				}
 			}
 		});
