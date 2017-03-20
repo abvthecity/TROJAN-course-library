@@ -1,6 +1,6 @@
 {
   "name": "trojan-course-api",
-  "version": "2.1.1",
+  "version": "2.1.11",
   "description": "Course Catalogue Web API for USC (JS and Node.js, unofficial)",
   "main": "src/TROJAN.js",
   "scripts": {

@@ -10,22 +10,22 @@ var numRegExp = new RegExp('[0-9]+', 'i');
 var seqRegExp = new RegExp('[a-z]$', 'i');
 
 function getDept(courseId) {
+	if (!courseId) return null;
 	var dept = deptRegExp.exec(courseId);
-	console.log(dept)
 	if (dept) dept = dept[0].toUpperCase();
 	return dept;
 }
 
 function getNum(courseId) {
+	if (!courseId) return null;
 	var num = numRegExp.exec(courseId);
-	console.log(num)
 	if (num) num = Math.round(num[0]);
 	return num;
 }
 
 function getSeq(courseId) {
+	if (!courseId) return null;
 	var seq = seqRegExp.exec(courseId);
-	console.log(seq)
 	if (seq) seq = seq[0].toUpperCase();
 	return seq;
 }
