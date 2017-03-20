@@ -402,9 +402,14 @@ TROJAN.deptsCN = function (options) {
 
 TROJAN.deptBatch_cb = function (depts, options, resolve, reject) {
 	options = options || {};
+  var term = options.term, refresh = options.refresh;
 
   reject = reject || function (e) { console.error(e.stack) }
-  function getClasses(term) {
+  function getClasses(termObject) {
+    var options = {
+      term: termObject.term,
+      refresh: refresh
+    };
     _.forEach(depts, function (dept) {
       TROJAN.dept(dept, options).then(function (data) {
         resolve(data);
@@ -412,7 +417,7 @@ TROJAN.deptBatch_cb = function (depts, options, resolve, reject) {
     });
   }
 
-  if (term) getClasses(term);
+  if (term) getClasses({ type: 'single_term_object', term });
   else {
     TROJAN.current_term().then(getClasses).catch(reject);
   }
