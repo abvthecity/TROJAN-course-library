@@ -5,24 +5,27 @@ var urlparse = require('./urlparse');
 var normalize = require('./normalize');
 var combinations = require('./combinations');
 
-var deptRegExp = new RegExp('[a-z]+?(?=\W)?', 'i');
-var numRegExp = new RegExp('[0-9]{3}', 'i');
-var seqRegExp = new RegExp('(?![0-9])[a-z]+?\b(?!( +?)[0-9]|-)', 'i');
+var deptRegExp = new RegExp('^[a-z]+(?!\D\W)', 'i');
+var numRegExp = new RegExp('[0-9]+', 'i');
+var seqRegExp = new RegExp('[a-z]$', 'i');
 
 function getDept(courseId) {
 	var dept = deptRegExp.exec(courseId);
+	console.log(dept)
 	if (dept) dept = dept[0].toUpperCase();
 	return dept;
 }
 
 function getNum(courseId) {
 	var num = numRegExp.exec(courseId);
+	console.log(num)
 	if (num) num = Math.round(num[0]);
 	return num;
 }
 
 function getSeq(courseId) {
 	var seq = seqRegExp.exec(courseId);
+	console.log(seq)
 	if (seq) seq = seq[0].toUpperCase();
 	return seq;
 }
@@ -150,6 +153,8 @@ TROJAN.course = function (courseId, options) {
 	options = options || {};
 
 	courseId = TROJAN.parseCourseId(courseId);
+	console.log(courseId);
+
 	var dept = courseId.dept, num = courseId.num, seq = courseId.seq;
 
   return new Promise(function (resolve, reject) {

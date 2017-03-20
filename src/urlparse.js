@@ -27,8 +27,12 @@ function createParameters(url, resolve, reject, count) {
 			} else {
 				inProgress = false;
 				callNext();
-				var data = JSON.parse(body);
-				resolve(data);
+				try {
+					var data = JSON.parse(body);
+					resolve(data);
+				} catch(e) {
+				 	reject(e.message);
+				}
 			}
 		});
 	}
@@ -60,6 +64,6 @@ module.exports = function (url, cached) {
 	if (cached) url += refresh;
 
 	return new Promise(function (resolve, reject) {
-		addToQueue(url, resolve);
+		addToQueue(url, resolve, reject);
 	});
 };
