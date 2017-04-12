@@ -11,7 +11,6 @@ We'll console.log 3 items:
 */
 
 var TROJAN = require('../src/TROJAN');
-var combinations = require('../src/combinations');
 var _ = require('lodash');
 
 var oldTime = Date.now();

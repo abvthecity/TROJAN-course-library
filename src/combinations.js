@@ -116,12 +116,6 @@ combinations.buckets = function (sections) {
     bucket[typeOrder[i]] = bucket[typeOrder[i]] || [];
     bucket[typeOrder[i]].push(sectionOrder[i]);
     // console.log(bucket);
-
-    if (!_.isEmpty(bucket)
-      && typeOrder[i].indexOf('-') > -1) { // lec-lab / lec-dis appearances)
-      buckets.push(bucket);
-      bucket = {};
-    }
   }
 
   // reconciliation:
@@ -153,7 +147,6 @@ combinations.orderIsImportant = function (sections, sectionOrder, typeOrder) {
   for (var key in sectionOrder) {
     var desc = sections[sectionOrder[key]].description;
     if (desc != null && immediatelyRegEx.test(desc)) {
-			console.log("omg");
       // to omit those weird ones...
       if (typeOrder[0] != typeOrder[1]) {
         return true;
